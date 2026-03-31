@@ -1,10 +1,33 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import type { ComponentDataConfig, EditorComponent } from '../types/component'
+
+export const defaultBarChartConfig = {
+  id: 'xxx',
+  component: 'VBarChart',
+  style: { /* 宽、高、位置等 */ },
+  dataConfig: {
+    type: 'static',
+    staticData: JSON.stringify([
+      { name: '周一', value: 120 },
+      { name: '周二', value: 200 },
+      { name: '周三', value: 150 },
+      { name: '周四', value: 80 }
+    ], null, 2),
+    xField: 'name',
+    yField: 'value'
+  }
+}
 
 export const useEidtorStore = defineStore('editor',()=>{
     // 画布上的组件列表
-    const componentData = ref<any[]>([])
-
+  // 给 componentData 加上类型约束
+    const componentData = ref<Array<{
+        id: string;
+        component: string;
+        style: any;
+        dataConfig: ComponentDataConfig;
+    }>>([])
     // 当前选中的组件
     const curComponent = ref<any>(null)
 
@@ -26,7 +49,7 @@ export const useEidtorStore = defineStore('editor',()=>{
     }
 
     //添加组件的方法
-    const addComponent = (component:any) =>{
+    const addComponent = (component: EditorComponent) => {
         componentData.value.push(component)
     }
 

@@ -124,12 +124,13 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import img1 from '../../assets/images/111.png'
 
 const router = useRouter()
 
 // 模拟后端返回的[全部]项目列表数据（我多加了几个数据，方便测试分页）
 const projectList = ref([
-  { id: 1, title: '物料1-假数据...', status: 1, image: '' },
+  { id: 1, title: '物料1-假数据...', status: 1, image: img1 },
   { id: 2, title: '物料2-假数据...', status: 0, image: '' },
   { id: 3, title: '物料3-假数据...', status: 0, image: '' },
   { id: 4, title: '物料4-假数据...', status: 0, image: '' },
@@ -310,7 +311,7 @@ const editProject = (id: number) => router.push({ path: '/editor', query: { id: 
 }
 .real-image { width: 100%; height: 100%; object-fit: cover; }
 .placeholder-text { color: var(--text-muted); font-size: 14px; }
-.hover-mask { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; opacity: 0; transition: 0.3s; }
+.hover-mask { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; opacity: 0; transition: 0.3s; pointer-events: none;}
 .card-image:hover .hover-mask { opacity: 1; }
 .zoom-icon { color: #fff; background: rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 4px;}
 .dots { position: absolute; top: 10px; left: 10px; display: flex; gap: 6px; z-index: 2; }
@@ -374,9 +375,10 @@ const editProject = (id: number) => router.push({ path: '/editor', query: { id: 
 .preview-title { margin: 0 0 16px 0; color: var(--text-primary); font-size: 18px; text-align: center; }
 .preview-img-wrapper { flex: 1; background-color: var(--bg-image-area); border-radius: 4px; display: flex; justify-content: center; align-items: center; overflow: hidden; }
 .preview-img-wrapper img { max-width: 100%; max-height: 100%; object-fit: contain; }
-.big-placeholder { color: var(--text-muted); font-size: 20px; letter-spacing: 2px; }
+.big-placeholder { color: #fff; font-size: 20px; letter-spacing: 2px; }
 
 /* 动画效果 */
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease, transform 0.2s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; transform: translateY(-5px); }
+
 </style>

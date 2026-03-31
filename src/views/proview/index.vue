@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import VBarChart from '../../packages/VBarChart.vue'
 import VLineChart from '../../packages/VLineChart.vue'
+import type { ComponentDataConfig } from '../../types/component'
 
 const router = useRouter()
 const componentMap: Record<string, any> = { VBarChart, VLineChart }
@@ -70,7 +71,11 @@ onUnmounted(() => {
           height: item.style.height + 'px'
         }"
       >
-        <component :is="componentMap[item.component]" :propValue="item.propValue" />
+        <component 
+          :is="componentMap[item.component]" 
+          :propValue="item.propValue"
+          :dataConfig="item.dataConfig"
+        />
       </div>
     </div>
   </div>

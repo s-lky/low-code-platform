@@ -2,6 +2,7 @@
 import { useEidtorStore } from '../../store/editor';
 import VBarChart from '../../packages/VBarChart.vue';
 import VLineChart from '../../packages/VLineChart.vue';
+import DataConfigPanel from '../../components/DataConfigPanel.vue';
 import { useRouter } from 'vue-router';
 import { onMounted, onUnmounted } from 'vue';
 
@@ -167,35 +168,44 @@ const handleDragStart = (e:DragEvent,componentName:string) =>{
     e.dataTransfer?.setData('componentName',componentName)
 }
 
-//中间-拖拽放下：组装JSON，塞入pinia
-const handleDrop = (e:DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
+// 中间-拖拽放下：组装JSON，塞入pinia
+const handleDrop = (e: DragEvent) => {
+  e.preventDefault()
+  e.stopPropagation()
 
-    //取出刚才存的信息名字
-    const componentName = e.dataTransfer?.getData('componentName')
-    if(!componentName) return
+  // 取出刚才存的信息名字
+  const componentName = e.dataTransfer?.getData('componentName')
+  if (!componentName) return
 
-    // 计算鼠标在画布上的相对坐标（落点在哪，组件就在哪）
-    // 用offsetx、y来获取相对与容器的位置
-    const top = e.offsetY
-    const left = e.offsetX
+  // 计算鼠标在画布上的相对坐标
+  const top = e.offsetY
+  const left = e.offsetX
 
-    //构造大屏组件的标准JSON结构
-    const newComponent = {
-        id: 'id_' + Date.now(),
-        component:componentName,
-        style:{
-            top:top,
-            left:left,
-            width:200,
-            height:150,
-        },
-        propValue: { title:'默认标题' } //用来存业务属性
-    }
+  // 构造【完全符合你类型定义】的标准JSON结构
+  const newComponent = {
+    id: 'id_' + Date.now(),
+    component: componentName,
+    style: {
+      top: top,
+      left: left,
+      width: 200,
+      height: 150,
+    },
+    // 👇 这里补上你接口必须的 dataConfig，解决报错
+    dataConfig: {
+      type: 'static' as const,
+      staticData: JSON.stringify([
+        { name: '数据1', value: 100 },
+        { name: '数据2', value: 200 }
+      ]),
+      xField: 'name',
+      yField: 'value'
+    },
+    propValue: { title: '默认标题' } // 业务属性
+  }
 
-    //把这个JSON丢给pinia的数据中心
-    editorStore.addComponent(newComponent)
+  // 把这个JSON丢给pinia的数据中心
+  editorStore.addComponent(newComponent)
 }
 
 
@@ -243,10 +253,11 @@ const handleDrop = (e:DragEvent) => {
 
                 <!-- 外层滚动包裹区 -->
                  <div class="scroll-wrapper">
-                    <!-- 左上角固定块+顶部水平标尺 -->
-                     <div class="ruler-corner"></div>
-                     <!-- 顶部标尺宽度跟随pinia的画布宽度 -->
-                      <div class="ruler-x" :style="{ width:editorStore.canvasConfig.width + 'px' }">
+                    <!-- 标尺行：左上角固定块 + 顶部水平标尺 -->
+                    <div class="ruler-row">
+                        <div class="ruler-corner"></div>
+                        <!-- 顶部标尺宽度跟随pinia的画布宽度 -->
+                        <div class="ruler-x" :style="{ width:editorStore.canvasConfig.width + 'px' }">
                         <!-- 纯前端动态生成刻度数字，每100px一个 -->
                          <span
                             v-for="n in Math.ceil(editorStore.canvasConfig.width / 100) + 1"
@@ -255,120 +266,95 @@ const handleDrop = (e:DragEvent) => {
                             :style="{ left: (n-1)*100 + 'px' }"
                          >{{ (n-1)*100 }}</span>
                       </div>
-                 </div>
-
-                 <!-- 左侧垂直标尺 -->
-                 <div class="canvas-row">
-                    <!-- 左侧标尺的高度跟随pinia里的画布高度 -->
-                     <div class="ruler-y" :style="{ height: editorStore.canvasConfig.height + 'px' }">
-                        <span
-                            v-for="n in Math.ceil(editorStore.canvasConfig.height / 100) + 1"
-                            :key="'y' + n"
-                            class="tick-label-y"
-                            :style="{ top: (n-1)*100 + 'px' }"
-                        >{{ (n-1)*100 }}</span>
-                     </div>
-                <!-- 真正的画布 -->
-                <div 
-                    class="canvas-area" 
-                    :style="{ 
-                    width: editorStore.canvasConfig.width + 'px', 
-                    height: editorStore.canvasConfig.height + 'px' 
-                }"
-                    @dragover.prevent 
-                    @drop="handleDrop" 
-                    @mousedown.self="editorStore.setCurComponent(null)"
-                >
-                 <!-- 画布区域加上@click="editorStore.setCurComponent(null)"点击空白处取消选中 -->
-                <p v-if="editorStore.componentData.length === 0" style="color: #666; text-align: center; margin-top: 200px;">
-                    请从左侧拖拽组件到这里
-                </p>
-                <!-- 数据驱动渲染的核心：遍历pinia里的数组 -->
-                 <!-- 用position:absolute才能根据left和top定位 -->
-                  <div
-                    v-for="item in editorStore.componentData"
-                    :key="item.id"
-                    class="shape-component"
-                    :class="{ active:editorStore.curComponent?.id === item.id }"
-                    :style="{
-                        left:item.style.left + 'px',
-                        top:item.style.top + 'px',
-                        width:item.style.width + 'px',
-                        height:item.style.height + 'px',
-                    }"
-                    @mousedown="handleMouseDown($event,item)"
-                    @click.stop
-                  >
-                    <!-- 动态渲染映射表里的组件 -->
-                    <component :is="componentMap[item.component]" :propValue="item.propValue" />
-
-                    <!-- 🌟 新增：只有选中时才显示的删除图标 -->
-                    <div 
-                        v-if="editorStore.curComponent?.id === item.id" 
-                        class="delete-icon"
-                        title="删除组件"
-                        @mousedown.stop="editorStore.removeComponent(item.id)"
-                    >
-                        ×
                     </div>
-                    <!-- 新增八个控制点-只有当前被选中的组件-才显示这八个点 -->
-                     <div v-if="editorStore.curComponent?.id === item.id">
+
+                    <div class="canvas-row">
+                        <!-- 左侧垂直标尺 -->
+                        <!-- 左侧标尺的高度跟随pinia里的画布高度 -->
+                        <div class="ruler-y" :style="{ height: editorStore.canvasConfig.height + 'px' }">
+                            <span
+                                v-for="n in Math.ceil(editorStore.canvasConfig.height / 100) + 1"
+                                :key="'y' + n"
+                                class="tick-label-y"
+                                :style="{ top: (n-1)*100 + 'px' }"
+                            >{{ (n-1)*100 }}</span>
+                        </div>
+                        <!-- 真正的画布 -->
+                        <div 
+                            class="canvas-area" 
+                            :style="{ 
+                            width: editorStore.canvasConfig.width + 'px', 
+                            height: editorStore.canvasConfig.height + 'px' 
+                        }"
+                            @dragover.prevent 
+                            @drop="handleDrop" 
+                            @mousedown.self="editorStore.setCurComponent(null)"
+                        >
+                        <!-- 画布区域加上@click="editorStore.setCurComponent(null)"点击空白处取消选中 -->
+                        <p v-if="editorStore.componentData.length === 0" style="color: #666; text-align: center; margin-top: 200px;">
+                            请从左侧拖拽组件到这里
+                        </p>
+                        <!-- 数据驱动渲染的核心：遍历pinia里的数组 -->
+                        <!-- 用position:absolute才能根据left和top定位 -->
                         <div
-                            v-for="point in pointList"
-                            :key="point"
-                            class="shape-point"
-                            :class="point"
-                            :style="{ cursor:cursorMap[point] }"
-                            @mousedown.stop="handleResizeMouseDown($event,point,item)"
-                        ></div>
-                     </div>
+                            v-for="item in editorStore.componentData"
+                            :key="item.id"
+                            class="shape-component"
+                            :class="{ active:editorStore.curComponent?.id === item.id }"
+                            :style="{
+                                left:item.style.left + 'px',
+                                top:item.style.top + 'px',
+                                width:item.style.width + 'px',
+                                height:item.style.height + 'px',
+                            }"
+                            @mousedown="handleMouseDown($event,item)"
+                            @click.stop
+                        >
+                            <!-- 动态渲染映射表里的组件 -->
+                            <component 
+                              :is="componentMap[item.component]" 
+                              :propValue="item.propValue"
+                              :dataConfig="item.dataConfig"
+                            />
+
+                            <!-- 🌟 新增：只有选中时才显示的删除图标 -->
+                            <div 
+                                v-if="editorStore.curComponent?.id === item.id" 
+                                class="delete-icon"
+                                title="删除组件"
+                                @mousedown.stop="editorStore.removeComponent(item.id)"
+                            >
+                                ×
+                            </div>
+                            <!-- 新增八个控制点-只有当前被选中的组件-才显示这八个点 -->
+                            <div v-if="editorStore.curComponent?.id === item.id">
+                                <div
+                                    v-for="point in pointList"
+                                    :key="point"
+                                    class="shape-point"
+                                    :class="point"
+                                    :style="{ cursor:cursorMap[point] }"
+                                    @mousedown.stop="handleResizeMouseDown($event,point,item)"
+                                ></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
         </section>
 
              <!-- 右侧：属性配置面板 -->
               <aside class="right-panel">
-                <div class="panel-title">属性配置</div>
-                <div class="config-area">
-                    <!-- 以后这里放表单，修改组件的颜色、数据等 -->
-                    <!-- 如果当前有选中的组件，就展示配置表单 -->
-                     <div v-if="editorStore.curComponent" class="form-container">
-                        <h3 style="margin-bottom: 20px; color: #00e5ff;">{{ editorStore.curComponent.component }}</h3>
-
-                        <!-- 业务属性配置 -->
-                         <div style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #444;">
-                            <h4 style="color: #aaa; margin-bottom: 10px;">业务配置</h4>
-                            <div class="form-item">
-                                <label>图表标题：</label>
-                                <input type="text" v-model="editorStore.curComponent.propValue.title" />
-                            </div>
-                         </div>
-
-                         <!-- 原来的样式配置区 -->
-                        <h4 style="color: #aaa; margin-bottom: 10px;">样式配置</h4>
-                        <div class="form-item">
-                            <label>X 坐标(Left)</label>
-                            <input type="number" v-model.number="editorStore.curComponent.style.left" />
-                        </div>
-                        <div class="form-item">
-                            <label>Y 坐标(Top)</label>
-                            <input type="number" v-model.number="editorStore.curComponent.style.top" />
-                        </div>
-                        <div class="form-item">
-                            <label>宽度(Width)</label>
-                            <input type="number" v-model.number="editorStore.curComponent.style.width" />
-                        </div>
-                        <div class="form-item">
-                            <label>高度(Height)</label>
-                            <input type="number" v-model.number="editorStore.curComponent.style.height" />
-                        </div>
-                     </div>
-                     <!-- 否则提示选中 -->
-                     <p style="color: #666; font-size: 14px; text-align: center; margin-top: 50px;">
-                        请先在画布中选中组件
-                     </p>
-                </div>
+                <!-- 使用数据配置面板组件 -->
+                <DataConfigPanel 
+                  v-if="editorStore.curComponent"
+                  v-model="editorStore.curComponent.dataConfig"
+                  :cur-component="editorStore.curComponent"
+                />
+                <!-- 否则提示选中 -->
+                <p v-else style="color: #666; font-size: 14px; text-align: center; margin-top: 50px;">
+                  请先在画布中选中组件
+                </p>
               </aside>
 
           </main>
@@ -405,7 +391,7 @@ const handleDrop = (e:DragEvent) => {
     background-color: #1d1e1f;
     border-right: 1px solid #000;
     display: flex;
-    font-display: column;
+    flex-direction: column;
 }
 /* =========== 核心画布区域布局 =========== */
 .center-board {
@@ -449,14 +435,14 @@ const handleDrop = (e:DragEvent) => {
     height: 20px;
     background-color: #1a1a1c;
     border-bottom: 1px solid #3c3c3c;
-    overflow: hidden;
+    position: relative;
     /* 利用css重复线性渐变画出刻度线 */
     background-image:
         repeating-linear-gradient(90deg, #555 0, #555 1px, transparent 1px, transparent 10px),
         repeating-linear-gradient(90deg, #888 0, #888 1px, transparent 1px, transparent 50px);
     background-size: 100% 4px, 100% 8px; /* 刻度的高度：短线4px，长线8px */
     background-position: left bottom, left bottom;
-    background-repeat: no-repeat, no-repeat;
+    background-repeat: repeat-x, repeat-x;
 }
 
 /*  Y 轴标尺 (左侧)  */
@@ -467,13 +453,13 @@ const handleDrop = (e:DragEvent) => {
     left: 0;
     z-index: 998;
     border-right: 1px solid #3c3c3c;
-    overflow: hidden;
+    position: relative;
     background-image:
         repeating-linear-gradient(180deg, #555 0, #555 1px, transparent 1px, transparent 10px),
         repeating-linear-gradient(180deg, #888 0, #888 1px, transparent 1px, transparent 50px);
     background-size: 4px 100%, 8px 100%;
     background-position: right top, right top;
-    background-repeat: no-repeat, no-repeat;
+    background-repeat: repeat-y, repeat-y;
 }
 
 /* 标尺上的数字标签 */
