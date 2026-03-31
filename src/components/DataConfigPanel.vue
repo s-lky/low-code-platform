@@ -3,7 +3,7 @@ import { ref, computed, watch } from 'vue'
 import { Codemirror } from 'vue-codemirror'
 import { json } from '@codemirror/lang-json'
 import { oneDark } from '@codemirror/theme-one-dark'
-import type { ComponentDataConfig } from '../../types/component'
+import type { ComponentDataConfig } from '../types/component'
 
 const props = defineProps<{
   modelValue: ComponentDataConfig | null
@@ -206,7 +206,7 @@ const fieldMappingTips = computed(() => {
           :extensions="extensions"
           :theme="cmTheme"
           style="height: 300px; border-radius: 4px;"
-          tab-size="2"
+          :tab-size="2"
           :autofocus="true"
           @change="saveConfig"
         />
@@ -240,7 +240,7 @@ const fieldMappingTips = computed(() => {
             :extensions="extensions"
             :theme="cmTheme"
             style="height: 100px; border-radius: 4px;"
-            tab-size="2"
+            :tab-size="2"
             @blur="saveHeaders"
           />
         </div>
@@ -252,7 +252,7 @@ const fieldMappingTips = computed(() => {
             :extensions="extensions"
             :theme="cmTheme"
             style="height: 100px; border-radius: 4px;"
-            tab-size="2"
+            :tab-size="2"
             @blur="saveParams"
           />
         </div>

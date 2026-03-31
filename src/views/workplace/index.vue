@@ -5,6 +5,7 @@ import VLineChart from '../../packages/VLineChart.vue';
 import DataConfigPanel from '../../components/DataConfigPanel.vue';
 import { useRouter } from 'vue-router';
 import { onMounted, onUnmounted } from 'vue';
+import './index.css' // 导入独立的 CSS 文件
 
 const router = useRouter()
 
@@ -181,7 +182,7 @@ const handleDrop = (e: DragEvent) => {
   const top = e.offsetY
   const left = e.offsetX
 
-  // 构造【完全符合你类型定义】的标准JSON结构
+  //组件JSON结构
   const newComponent = {
     id: 'id_' + Date.now(),
     component: componentName,
@@ -191,7 +192,6 @@ const handleDrop = (e: DragEvent) => {
       width: 200,
       height: 150,
     },
-    // 👇 这里补上你接口必须的 dataConfig，解决报错
     dataConfig: {
       type: 'static' as const,
       staticData: JSON.stringify([
@@ -317,7 +317,7 @@ const handleDrop = (e: DragEvent) => {
                               :dataConfig="item.dataConfig"
                             />
 
-                            <!-- 🌟 新增：只有选中时才显示的删除图标 -->
+                            <!-- 新增：只有选中时才显示的删除图标 -->
                             <div 
                                 v-if="editorStore.curComponent?.id === item.id" 
                                 class="delete-icon"
@@ -361,224 +361,3 @@ const handleDrop = (e: DragEvent) => {
     </div>
 </template>
 
-<style scoped>
-.workspace-container{
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    width: 100vw;
-    overflow: hidden;
-    background-color: #151515;
-    color: #fff;
-}
-.header{
-    height: 60px;
-    background-color: #222;
-    border-bottom: 1px solid #000;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 20px;
-}
-.main-content{
-    display: flex;
-    flex: 1;
-    overflow: hidden;
-}
-
-.left-panel{
-    width: 250px;
-    background-color: #1d1e1f;
-    border-right: 1px solid #000;
-    display: flex;
-    flex-direction: column;
-}
-/* =========== 核心画布区域布局 =========== */
-.center-board {
-    flex: 1;
-    background-color: #0f1011;
-    position: relative; 
-    overflow: auto; /* 保证容器出现滚动条 */
-}
-
-.scroll-wrapper {
-    display: inline-block; /* 极其关键：让包裹层随内部内容撑开 */
-    padding: 40px; /* 让画布周围有留白空间，不会贴着边 */
-}
-
-/* =========== 标尺行与列的 Flex 布局 =========== */
-.ruler-row {
-    display: flex;
-    position: sticky;
-    top: 0;
-    z-index: 999;
-}
-
-.canvas-row {
-    display: flex;
-}
-
-/* 左上角空白交叉处 */
-.ruler-corner {
-    width: 20px;
-    height: 20px;
-    background-color: #1a1a1c;
-    position: sticky;
-    left: 0;
-    z-index: 1000;
-    border-right: 1px solid #3c3c3c;
-    border-bottom: 1px solid #3c3c3c;
-}
-
-/*  X 轴标尺 (顶部)  */
-.ruler-x {
-    height: 20px;
-    background-color: #1a1a1c;
-    border-bottom: 1px solid #3c3c3c;
-    position: relative;
-    /* 利用css重复线性渐变画出刻度线 */
-    background-image:
-        repeating-linear-gradient(90deg, #555 0, #555 1px, transparent 1px, transparent 10px),
-        repeating-linear-gradient(90deg, #888 0, #888 1px, transparent 1px, transparent 50px);
-    background-size: 100% 4px, 100% 8px; /* 刻度的高度：短线4px，长线8px */
-    background-position: left bottom, left bottom;
-    background-repeat: repeat-x, repeat-x;
-}
-
-/*  Y 轴标尺 (左侧)  */
-.ruler-y {
-    width: 20px;
-    background-color: #1a1a1c;
-    position: sticky;
-    left: 0;
-    z-index: 998;
-    border-right: 1px solid #3c3c3c;
-    position: relative;
-    background-image:
-        repeating-linear-gradient(180deg, #555 0, #555 1px, transparent 1px, transparent 10px),
-        repeating-linear-gradient(180deg, #888 0, #888 1px, transparent 1px, transparent 50px);
-    background-size: 4px 100%, 8px 100%;
-    background-position: right top, right top;
-    background-repeat: repeat-y, repeat-y;
-}
-
-/* 标尺上的数字标签 */
-.tick-label-x {
-    position: absolute;
-    top: 1px;
-    transform: translateX(-50%);
-    font-size: 10px;
-    color: #777;
-    user-select: none;
-}
-
-.tick-label-y {
-    position: absolute;
-    left: 2px;
-    transform: translateY(-50%) rotate(-90deg); /* 翻转 Y 轴数字，更还原大屏编辑器 */
-    font-size: 10px;
-    color: #777;
-    user-select: none;
-    white-space: nowrap;
-}
-
-/*  真正的画布区域  */
-.canvas-area {
-    /* 这里去掉了原本写死的 1920x1080，因为我们在 template 里用 style 动态绑定了 */
-    background-color: #1a1a1a;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-    position: relative;
-    /* 原有的网格背景保留，刚好和 100px 的刻度完美对齐 */
-    background-image:
-        linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
-    background-size: 20px 20px;
-    overflow: hidden;
-}
-.right-panel{
-    width: 300px; background-color: #1d1e1f;
-    border-left: 1px solid #000;
-}
-.panel-title{
-    padding: 10px; font-weight: bold;
-    border-bottom: 1px solid #333;
-}
-.mock-item{
-    margin: 10px; padding: 10px;
-    background: #333; text-align: center;
-    cursor: grab; border-radius: 4px;
-}
-/* 画布内组件的通用样式 */
-/* 颜色交给内部的vue组件了，不用在css里写颜色 */
-.shape-component {
-    position: absolute; display: flex;
-    align-items: center; justify-content: center;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-.shape-component:hover {
-    cursor: pointer;
-    box-shadow: 0 0 10px #409eff;
-}
-/* 选中时的边框高亮 */
-.shape-component.active {
-    outline: 2px solid #00e5ff;
-    box-shadow: 0 0 15px rgba(0, 229, 255, 0.5);
-    z-index: 99; /* 选中时置于顶层 */
-}
-/* 右侧表单样式 */
-.form-container {
-    padding: 20px;
-}
-.form-item {
-    display: flex; justify-content: space-between;
-    align-items: center; margin-bottom: 15px;
-}
-.form-label{
-    font-size: 14px; color: #aaa;
-}
-.form-item input{
-    width: 100px;
-    background: #333; border: 1px solid #555;
-    color: #fff; padding: 5px; border-radius: 4px;
-}
-.form-item input:focus{
-    outline: none; border-color: #00e5ff;
-}
-
-/* 八个小圆点的通用样式 */
-.shape-point{
-    position: absolute; background-color: #fff;
-    border: 2px solid #00e5ff;  width: 8px;
-    height: 8px; border-radius: 50%; z-index: 100;
-}
-/* 分别把八个点绝对定位到四周边缘 */
-.shape-point.t {top: -5px; left: 50%; margin-left: -5px;}
-.shape-point.b {bottom: -5px; left: 50%; margin-left: -5px;}
-.shape-point.l {left: -5px; top: 50%; margin-top: -5px;}
-.shape-point.r {right: -5px; top: 50%; margin-top: -5px;}
-.shape-point.lt {top: -5px; left: -5px;}
-.shape-point.rt {top: -5px; right: -5px;}
-.shape-point.lb {bottom: -5px; left: -5px;}
-.shape-point.rb {bottom: -5px; right: -5px;}
-.btn{
-    background: #333; color: #fff; border: 1px solid #555;
-    padding: 5px 15px; margin-left: 10px; border-radius: 4px; cursor: pointer;
-}
-.btn.primary{
-    background-color: #00e5ff; color: #000; font-weight: bold; border: none;
-}
-.btn:hover{opacity: 0.8;}
-.delete-icon{
-    position: absolute; top: -10px; right: -10px;
-    width: 20px; height: 20px; background-color: #ff4d4f;
-    color: #fff; border-radius: 50%; display: flex;
-    align-items: center; font-size: 16px; cursor: pointer;
-    z-index: 101; /*确保在八个点之上 */
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5); transition: transform 0.2s;    
-}
-.delete-icon:hover{
-    transform: scale(1.2); background-color: #ff7875;
-}
-
-</style>

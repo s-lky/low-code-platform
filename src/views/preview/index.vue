@@ -4,7 +4,6 @@ import { useRouter } from 'vue-router'
 import VBarChart from '../../packages/VBarChart.vue'
 import VLineChart from '../../packages/VLineChart.vue'
 import type { ComponentDataConfig } from '../../types/component'
-import './index.css' // 导入独立的 CSS 文件
 
 const router = useRouter()
 const componentMap: Record<string, any> = { VBarChart, VLineChart }
@@ -81,3 +80,38 @@ onUnmounted(() => {
     </div>
   </div>
 </template>
+
+<style scoped>
+/* 最外层的视口，充满整个浏览器，超出部分隐藏，防止出现滚动条 */
+.preview-viewport {
+  width: 100vw;
+  height: 100vh;
+  background-color: #000; /* 视口背景通常是纯黑 */
+  overflow: hidden;
+  position: relative;
+}
+
+/* 核心大屏容器：永远 1920x1080，利用绝对定位配合 transform 居中缩放 */
+.canvas-screen {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  /* 这里的 transform 已经在 inline-style 里动态绑定了 */
+  transform-origin: center center;
+  background-color: #0f1011;
+  /* 边框和发光 */
+  box-shadow: 0 0 30px rgba(0, 229, 255, 0.2);
+  border: 1px solid rgba(0, 229, 255, 0.1);
+}
+
+.preview-component {
+  position: absolute;
+}
+
+.back-btn {
+  position: absolute; top: 20px; right: 20px; z-index: 999;
+  padding: 10px 20px; background: rgba(255, 255, 255, 0.1);
+  color: #00e5ff; border: 1px solid #00e5ff; border-radius: 4px; cursor: pointer;
+}
+.back-btn:hover { background: rgba(0, 229, 255, 0.2); }
+</style>

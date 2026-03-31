@@ -22,14 +22,9 @@ export const defaultBarChartConfig = {
 export const useEidtorStore = defineStore('editor',()=>{
     // 画布上的组件列表
   // 给 componentData 加上类型约束
-    const componentData = ref<Array<{
-        id: string;
-        component: string;
-        style: any;
-        dataConfig: ComponentDataConfig;
-    }>>([])
+    const componentData = ref<Array<EditorComponent>>([])
     // 当前选中的组件
-    const curComponent = ref<any>(null)
+    const curComponent = ref<EditorComponent | null>(null)
 
     const canvasConfig = ref({
         width: 1920,

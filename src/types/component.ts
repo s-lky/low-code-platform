@@ -7,7 +7,7 @@ export interface ApiFieldMapping {
 export interface ComponentDataConfig {
     type: 'static' | 'api';
     // 静态数据配置
-    staticData: string;  // JSON 字符串
+    staticData?: string;  // JSON 字符串
     
     // API 数据配置
     apiUrl?: string;          // API 接口地址
@@ -25,7 +25,7 @@ export interface EditorComponent {
   id: string;
   component: string;
   style: any; // 以后有空了可以把 style 也定义一个具体的 Interface
-  dataConfig: ComponentDataConfig;
+  dataConfig: ComponentDataConfig | null;
   propValue: {
     title: string;
   };
