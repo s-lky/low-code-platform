@@ -166,3 +166,218 @@
 /* 动画效果 */
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease, transform 0.2s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; transform: translateY(-5px); }
+
+/* 创建项目弹窗样式 */
+.create-dialog-overlay, .template-dialog-overlay, .market-dialog-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+
+.create-dialog, .template-dialog, .market-dialog {
+    width: 480px;
+    background: #1d1e1f;
+    border: 1px solid #333;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+}
+
+.create-dialog .dialog-header, 
+.template-dialog .dialog-header,
+.market-dialog .dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #333;
+}
+
+.create-dialog .dialog-header h3,
+.template-dialog .dialog-header h3,
+.market-dialog .dialog-header h3 {
+    margin: 0;
+    color: #fff;
+    font-size: 18px;
+}
+
+.create-dialog .dialog-close,
+.template-dialog .dialog-close,
+.market-dialog .dialog-close {
+    background: transparent;
+    border: none;
+    color: #999;
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.create-dialog .dialog-close:hover,
+.template-dialog .dialog-close:hover,
+.market-dialog .dialog-close:hover {
+    color: #ff4d4f;
+}
+
+.create-dialog .dialog-body,
+.template-dialog .dialog-body,
+.market-dialog .dialog-body {
+    padding: 24px;
+}
+
+/* 创建选项按钮样式 */
+.create-options {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+}
+
+.create-option-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 24px 32px;
+    background: rgba(24, 160, 88, 0.1);
+    border: 1px solid rgba(24, 160, 88, 0.3);
+    border-radius: 8px;
+    color: #18a058;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 120px;
+}
+
+.create-option-btn:hover {
+    background: #18a058;
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(24, 160, 88, 0.3);
+}
+
+.create-option-btn .option-icon {
+    font-size: 24px;
+}
+
+.create-option-btn .option-label {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* 模板列表样式 */
+.template-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.template-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    background: #333;
+    border: 1px solid #555;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.template-item:hover {
+    background: rgba(24, 160, 88, 0.1);
+    border-color: #18a058;
+    transform: translateX(4px);
+}
+
+.template-preview {
+    width: 80px;
+    height: 60px;
+    background: #121214;
+    border-radius: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.template-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.template-placeholder {
+    font-size: 12px;
+    color: #666;
+    text-align: center;
+    padding: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.template-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+}
+
+.template-title {
+    color: #fff;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.template-date {
+    color: #999;
+    font-size: 12px;
+}
+
+/* 空状态样式 */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    color: #999;
+}
+
+.empty-state .empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.empty-state p {
+    margin: 0;
+    font-size: 14px;
+    text-align: center;
+}
+
+/* 滚动条样式 */
+.template-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.template-list::-webkit-scrollbar-track {
+    background: #1d1e1f;
+    border-radius: 3px;
+}
+
+.template-list::-webkit-scrollbar-thumb {
+    background: #555;
+    border-radius: 3px;
+}
+
+.template-list::-webkit-scrollbar-thumb:hover {
+    background: #666;
+}

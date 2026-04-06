@@ -53,6 +53,17 @@ export const useEidtorStore = defineStore('editor',()=>{
         curComponent.value = component
     }
 
+    // 清空画布数据
+    const clearCanvas = () => {
+        componentData.value = []
+        curComponent.value = null
+    }
+
+    // 批量设置画布数据（用于加载模板）
+    const setComponentData = (data: Array<EditorComponent>) => {
+        componentData.value = data
+    }
+
     return{
         componentData,
         curComponent,
@@ -60,5 +71,7 @@ export const useEidtorStore = defineStore('editor',()=>{
         removeComponent,
         addComponent,
         setCurComponent,
+        clearCanvas,
+        setComponentData,
     }
 })

@@ -4,14 +4,14 @@
     <!-- 左侧侧边栏(动态绑定collapsed类名) -->
     <aside class="sidebar" :class="{ 'collapsed': isSidebarCollapsed }">
       <div class="new-btn-box">
-        <button class="btn-new" @click="createNewProject">
+        <button class="btn-new" @click="showCreateDialog = true">
           <span class="icon">+</span> 新建
         </button>
       </div>
       <nav class="menu">
-        <div class="menu-item active">全部项目</div>
-        <div class="menu-item">我的模板</div>
-        <div class="menu-item">模板市场</div>
+        <div class="menu-item" :class="{ active: activeMenu === 'projects' }" @click="activeMenu = 'projects'">全部项目</div>
+        <div class="menu-item" :class="{ active: activeMenu === 'templates' }" @click="activeMenu = 'templates'">我的模板</div>
+        <div class="menu-item" :class="{ active: activeMenu === 'market' }" @click="activeMenu = 'market'">模板市场</div>
       </nav>
     </aside>
 
@@ -118,6 +118,93 @@
         </div>
       </Transition>
     </Teleport>
+
+    <!--  新增：创建项目弹窗 -->
+    <Teleport to="body">
+      <Transition name="fade">
+        <div v-if="showCreateDialog" class="create-dialog-overlay" @click="showCreateDialog = false">
+          <div class="create-dialog" @click.stop>
+            <div class="dialog-header">
+              <h3>从哪里出发好呢？</h3>
+              <button class="dialog-close" @click="showCreateDialog = false">×</button>
+            </div>
+            <div class="dialog-body">
+              <div class="create-options">
+                <button class="create-option-btn" @click="createFromNew">
+                  <span class="option-icon"></span>
+                  <span class="option-label">新项目</span>
+                </button>
+                <button class="create-option-btn" @click="showTemplateList = true">
+                  <span class="option-icon">📁</span>
+                  <span class="option-label">我的模板</span>
+                </button>
+                <button class="create-option-btn" @click="showTemplateMarket = true">
+                  <span class="option-icon">🏪</span>
+                  <span class="option-label">模板市场</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!--  新增：模板选择弹窗 -->
+    <Teleport to="body">
+      <Transition name="fade">
+        <div v-if="showTemplateList" class="template-dialog-overlay" @click="showTemplateList = false">
+          <div class="template-dialog" @click.stop>
+            <div class="dialog-header">
+              <h3>选择模板</h3>
+              <button class="dialog-close" @click="showTemplateList = false">×</button>
+            </div>
+            <div class="dialog-body">
+              <div class="template-list" v-if="myTemplates.length > 0">
+                <div 
+                  class="template-item" 
+                  v-for="template in myTemplates" 
+                  :key="template.id"
+                  @click="createFromTemplate(template)"
+                >
+                  <div class="template-preview">
+                    <img v-if="template.image" :src="template.image" alt="模板" />
+                    <div v-else class="template-placeholder">{{ template.title }}</div>
+                  </div>
+                  <div class="template-info">
+                    <div class="template-title">{{ template.title }}</div>
+                    <div class="template-date">{{ template.createdAt }}</div>
+                  </div>
+                </div>
+              </div>
+              <div class="empty-state" v-else>
+                <div class="empty-icon">📭</div>
+                <p>暂无模板，请先保存一些模板吧！</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!--  新增：模板市场弹窗（预留） -->
+    <Teleport to="body">
+      <Transition name="fade">
+        <div v-if="showTemplateMarket" class="market-dialog-overlay" @click="showTemplateMarket = false">
+          <div class="market-dialog" @click.stop>
+            <div class="dialog-header">
+              <h3>模板市场</h3>
+              <button class="dialog-close" @click="showTemplateMarket = false">×</button>
+            </div>
+            <div class="dialog-body">
+              <div class="empty-state">
+                <div class="empty-icon"></div>
+                <p>模板市场即将上线，敬请期待！</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -129,7 +216,10 @@ import './index.css' // 导入独立的 CSS 文件
 
 const router = useRouter()
 
-// 模拟后端返回的[全部]项目列表数据（我多加了几个数据，方便测试分页）
+// 当前选中的菜单
+const activeMenu = ref('projects') // 'projects' | 'templates' | 'market'
+
+// 模拟后端返回的[全部]项目列表数据
 const projectList = ref([
   { id: 1, title: '物料1-假数据...', status: 1, image: img1 },
   { id: 2, title: '物料2-假数据...', status: 0, image: '' },
@@ -141,8 +231,34 @@ const projectList = ref([
   { id: 8, title: '物料8-第二页测试', status: 1, image: '' },
   { id: 9, title: '物料9-第二页测试', status: 0, image: '' },
   { id: 10, title: '物料10-第二页测试', status: 0, image: '' },
-  { id: 11, title: '物料11-第二页测试', status: 0, image: '' }, // 第11个数据，触发第二页
+  { id: 11, title: '物料11-第二页测试', status: 0, image: '' },
 ])
+
+// 从 localStorage 加载我的模板
+const loadMyTemplates = () => {
+  const stored = localStorage.getItem('my-go-view-templates')
+  if (stored) {
+    try {
+      return JSON.parse(stored).map((t: any) => ({
+        ...t,
+        status: 0, // 模板默认未发布
+        type: 'template'
+      }))
+    } catch {
+      return []
+    }
+  }
+  return []
+}
+
+// 我的模板列表
+const myTemplates = ref(loadMyTemplates())
+
+// 根据当前菜单返回对应的列表
+const currentList = computed(() => {
+  if (activeMenu.value === 'templates') return myTemplates.value
+  return projectList.value
+})
 
 //主题切换逻辑
 const isLightMode = ref(false)
@@ -171,11 +287,25 @@ const handleAction = (action:string,item:any) =>{
     if(action === 'preview'){
         openPreview(item)
     }else if(action === 'toggleStatus'){
-        item.status = item.status === 1 ? 0 : 1 //切换发布状态
+        // 只对全部项目有效，模板不支持发布状态切换
+        if (activeMenu.value === 'projects') {
+            item.status = item.status === 1 ? 0 : 1
+        }
     }else if(action === 'delete'){
-        const index = projectList.value.findIndex(p=>p.id === item.id)
-        if(index>-1) projectList.value.splice(index,1)
+        // 根据当前菜单决定从哪个列表中删除
+        if (activeMenu.value === 'templates') {
+            const index = myTemplates.value.findIndex(p => p.id === item.id)
+            if(index > -1) {
+                myTemplates.value.splice(index, 1)
+                // 同时更新 localStorage
+                localStorage.setItem('my-go-view-templates', JSON.stringify(myTemplates.value))
+            }
+        } else {
+            const index = projectList.value.findIndex(p => p.id === item.id)
+            if(index > -1) projectList.value.splice(index, 1)
+        }
     }
+    activeMenuId.value = null // 关闭菜单
 }
 //  新增分页逻辑 
 const currentPage = ref(1)
@@ -183,14 +313,14 @@ const pageSize = ref(10) // 默认每页10条
 
 // 计算总页数
 const totalPages = computed(() => {
-  return Math.ceil(projectList.value.length / pageSize.value) || 1
+  return Math.ceil(currentList.value.length / pageSize.value) || 1
 })
 
 // 计算当前页应该显示的数据 (前端切片假分页)
 const paginatedList = computed(() => {
   const start = (currentPage.value - 1) * pageSize.value
   const end = start + pageSize.value
-  return projectList.value.slice(start, end)
+  return currentList.value.slice(start, end)
 })
 
 //  新增放大预览逻辑 
@@ -209,5 +339,61 @@ const closePreview = () => {
 
 // 路由跳转
 const createNewProject = () => router.push({ path: '/editor' })
-const editProject = (id: number) => router.push({ path: '/editor', query: { id: id.toString() } })
+
+// 创建弹窗相关状态
+const showCreateDialog = ref(false)
+const showTemplateList = ref(false)
+const showTemplateMarket = ref(false)
+
+// 新建项目（空白项目）
+const createFromNew = () => {
+  showCreateDialog.value = false
+  router.push({ path: '/editor' })
+}
+
+// 从模板创建项目
+const createFromTemplate = (template: any) => {
+  if (!template.data) {
+    alert('模板数据不完整！')
+    return
+  }
+  // 将模板数据保存到 localStorage，供编辑器加载
+  localStorage.setItem('my-go-view-data', template.data)
+  showTemplateList.value = false
+  showCreateDialog.value = false
+  router.push({ path: '/editor' })
+}
+
+const editProject = (id: number) => {
+  // 判断是否是模板
+  const isTemplate = activeMenu.value === 'templates'
+  router.push({ 
+    path: '/editor', 
+    query: { 
+      id: id.toString(),
+      type: isTemplate ? 'template' : 'project'
+    } 
+  })
+}
+
+// 加载模板数据到编辑器
+const loadTemplateToEditor = () => {
+  const queryId = router.currentRoute.value.query.id
+  const queryType = router.currentRoute.value.query.type
+  
+  if (queryType === 'template' && queryId) {
+    const template = myTemplates.value.find(t => t.id === Number(queryId))
+    if (template && template.data) {
+      // 将模板数据保存到预览存储，供编辑器加载
+      localStorage.setItem('my-go-view-data', template.data)
+    }
+  }
+}
+
+// 页面挂载时检查是否需要加载模板
+onMounted(() => {
+  window.addEventListener('click', closeMenu)
+  // 如果有路由参数，尝试加载模板数据
+  loadTemplateToEditor()
+})
 </script>

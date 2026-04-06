@@ -4,18 +4,10 @@ import VBarChart from '../../packages/VBarChart.vue';
 import VLineChart from '../../packages/VLineChart.vue';
 import DataConfigPanel from '../../components/DataConfigPanel.vue';
 import { useRouter } from 'vue-router';
-import { onMounted, onUnmounted, nextTick, ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import './index.css' // 导入独立的 CSS 文件
 
 const router = useRouter()
-const isLayoutReady = ref(false)
-
-onMounted(() => {
-    // 确保 DOM 渲染完成后再显示布局
-    nextTick(() => {
-        isLayoutReady.value = true
-    })
-})
 
 // 处理键盘删除事件
 const handleKeyDown = (e: KeyboardEvent) => {
@@ -34,21 +26,84 @@ const handleKeyDown = (e: KeyboardEvent) => {
   }
 }
 
-// 在页面挂载时监听全局键盘事件
+// 页面挂载时执行
 onMounted(() => {
+  // 监听全局键盘事件
   window.addEventListener('keydown', handleKeyDown)
+  
+  // 检查是否有从模板加载的数据
+  const savedData = localStorage.getItem('my-go-view-data')
+  if (savedData) {
+    try {
+      const parsed = JSON.parse(savedData)
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        // 使用批量设置方法（会清空旧数据）
+        editorStore.setComponentData(parsed)
+      }
+    } catch (e) {
+      console.error('加载保存数据失败:', e)
+    }
+  }
 })
 
-// 离开页面时记得销毁监听，防止污染其他页面
+// 离开页面时销毁监听
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeyDown)
 })
 
 //保存功能
 const saveData = () =>{
-    //把pinia里的画布数据变成字符串存进浏览器的本地存储里
-    localStorage.setItem('my-go-view-data', JSON.stringify(editorStore.componentData))
-    alert('保存成功，点击预览可查看')
+  // 显示保存选项弹窗
+  showSaveDialog.value = true
+}
+
+// 保存弹窗相关状态
+const showSaveDialog = ref(false)
+const templateName = ref('')
+
+// 确认保存到模板
+const confirmSaveToTemplate = () => {
+  if (!templateName.value.trim()) {
+    alert('请输入模板名称！')
+    return
+  }
+  
+  // 保存当前画布数据到模板
+  const templateData = {
+    id: Date.now(),
+    title: templateName.value,
+    data: JSON.stringify(editorStore.componentData),
+    image: '', // 可以后续添加截图功能
+    createdAt: new Date().toLocaleString()
+  }
+  
+  // 从 localStorage 读取现有模板列表
+  const existingTemplates = localStorage.getItem('my-go-view-templates')
+  const templates = existingTemplates ? JSON.parse(existingTemplates) : []
+  templates.push(templateData)
+  
+  // 保存到 localStorage
+  localStorage.setItem('my-go-view-templates', JSON.stringify(templates))
+  
+  // 关闭弹窗并清空输入
+  showSaveDialog.value = false
+  templateName.value = ''
+  
+  alert('模板保存成功！')
+}
+
+// 仅保存到预览（保持原有逻辑）
+const saveToPreview = () => {
+  // 把pinia里的画布数据变成字符串存进浏览器的本地存储里
+  localStorage.setItem('my-go-view-data', JSON.stringify(editorStore.componentData))
+  showSaveDialog.value = false
+  alert('保存成功，点击预览可查看')
+}
+
+// 取消保存
+const cancelSave = () => {
+  showSaveDialog.value = false
+  templateName.value = ''
 }
 
 //跳转预览页
@@ -220,7 +275,7 @@ const handleDrop = (e: DragEvent) => {
 </script>
 
 <template>
-    <div class="workspace-container" v-if="isLayoutReady">
+    <div class="workspace-container">
         <!-- 顶部工具栏 -->
          <header class="header">
             <div class="logo"> My Go-View </div>
@@ -231,7 +286,7 @@ const handleDrop = (e: DragEvent) => {
             </div>
          </header>
 
-         <!-- 下方主工作区（flex） -->
+         <!-- 下方主工作区（使用 Grid 布局，更稳定） -->
           <main class="main-content">
 
             <!-- 左侧：图表物料库 -->
@@ -367,5 +422,36 @@ const handleDrop = (e: DragEvent) => {
 
           </main>
     </div>
+
+    <!-- 保存弹窗 -->
+    <Teleport to="body">
+      <Transition name="fade">
+        <div v-if="showSaveDialog" class="save-dialog-overlay" @click="cancelSave">
+          <div class="save-dialog" @click.stop>
+            <div class="dialog-header">
+              <h3>保存项目</h3>
+              <button class="dialog-close" @click="cancelSave">×</button>
+            </div>
+            <div class="dialog-body">
+              <div class="form-group">
+                <label>模板名称：</label>
+                <input 
+                  type="text" 
+                  v-model="templateName" 
+                  placeholder="请输入模板名称"
+                  class="dialog-input"
+                  @keyup.enter="confirmSaveToTemplate"
+                />
+              </div>
+            </div>
+            <div class="dialog-footer">
+              <button class="btn-cancel" @click="cancelSave">取消</button>
+              <button class="btn-save-preview" @click="saveToPreview">保存到预览</button>
+              <button class="btn-save-template" @click="confirmSaveToTemplate">保存到模板</button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
 </template>
 

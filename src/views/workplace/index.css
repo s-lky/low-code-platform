@@ -8,7 +8,7 @@
     background-color: #151515;
     color: #fff;
 }
-.header{
+.workspace-container .header{
     height: 60px;
     background-color: #222;
     border-bottom: 1px solid #000;
@@ -17,29 +17,27 @@
     align-items: center;
     padding: 0 20px;
 }
-.main-content{
-    display: flex;
+.workspace-container .main-content{
+    display: grid;
+    grid-template-columns: 250px 1fr 300px;
     flex: 1;
     overflow: hidden;
-    min-width: 0;
 }
 
-.left-panel{
+.workspace-container .left-panel{
     width: 250px;
-    flex-shrink: 0; /* 防止被压缩 */
-    overflow: hidden;
-    flex-wrap: nowrap;
     background-color: #1d1e1f;
     border-right: 1px solid #000;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 /* =========== 核心画布区域布局 =========== */
-.center-board {
-    flex: 1;
+.workspace-container .center-board {
     background-color: #0f1011;
     position: relative; 
     overflow: auto; /* 保证容器出现滚动条 */
+    min-width: 0;
 }
 
 .scroll-wrapper {
@@ -136,85 +134,83 @@
     background-size: 20px 20px;
     overflow: hidden;
 }
-.right-panel{
+.workspace-container .right-panel{
     width: 300px;
-    flex-shrink: 0; /* 防止被压缩 */
     background-color: #1d1e1f;
-    overflow: hidden;
-    flex-wrap: nowrap;
     border-left: 1px solid #000;
+    overflow: hidden;
 }
-.panel-title{
+.workspace-container .panel-title{
     padding: 10px; font-weight: bold;
     border-bottom: 1px solid #333;
 }
-.mock-item{
+.workspace-container .mock-item{
     margin: 10px; padding: 10px;
     background: #333; text-align: center;
     cursor: grab; border-radius: 4px;
 }
 /* 画布内组件的通用样式 */
 /* 颜色交给内部的 vue 组件了，不用在 css 里写颜色 */
-.shape-component {
+.workspace-container .shape-component {
     position: absolute; display: flex;
     align-items: center; justify-content: center;
     border-radius: 4px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
-.shape-component:hover {
+.workspace-container .shape-component:hover {
     cursor: pointer;
     box-shadow: 0 0 10px #409eff;
 }
 /* 选中时的边框高亮 */
-.shape-component.active {
+.workspace-container .shape-component.active {
     outline: 2px solid #00e5ff;
     box-shadow: 0 0 15px rgba(0, 229, 255, 0.5);
     z-index: 99; /* 选中时置于顶层 */
 }
 /* 右侧表单样式 */
-.form-container {
+.workspace-container .form-container {
     padding: 20px;
 }
-.form-item {
+.workspace-container .form-item {
     display: flex; justify-content: space-between;
     align-items: center; margin-bottom: 15px;
 }
-.form-label{
+.workspace-container .form-label{
     font-size: 14px; color: #aaa;
 }
-.form-item input{
+.workspace-container .form-item input{
     width: 100px;
     background: #333; border: 1px solid #555;
     color: #fff; padding: 5px; border-radius: 4px;
 }
-.form-item input:focus{
+.workspace-container .form-item input:focus{
     outline: none; border-color: #00e5ff;
 }
 
 /* 八个小圆点的通用样式 */
-.shape-point{
+.workspace-container .shape-point{
     position: absolute; background-color: #fff;
     border: 2px solid #00e5ff;  width: 8px;
     height: 8px; border-radius: 50%; z-index: 100;
 }
 /* 分别把八个点绝对定位到四周边缘 */
-.shape-point.t {top: -5px; left: 50%; margin-left: -5px;}
-.shape-point.b {bottom: -5px; left: 50%; margin-left: -5px;}
-.shape-point.l {left: -5px; top: 50%; margin-top: -5px;}
-.shape-point.r {right: -5px; top: 50%; margin-top: -5px;}
-.shape-point.lt {top: -5px; left: -5px;}
-.shape-point.rt {top: -5px; right: -5px;}
-.shape-point.lb {bottom: -5px; left: -5px;}
-.shape-point.rb {bottom: -5px; right: -5px;}
-.btn{
+.workspace-container .shape-point.t {top: -5px; left: 50%; margin-left: -5px;}
+.workspace-container .shape-point.b {bottom: -5px; left: 50%; margin-left: -5px;}
+.workspace-container .shape-point.l {left: -5px; top: 50%; margin-top: -5px;}
+.workspace-container .shape-point.r {right: -5px; top: 50%; margin-top: -5px;}
+.workspace-container .shape-point.lt {top: -5px; left: -5px;}
+.workspace-container .shape-point.rt {top: -5px; right: -5px;}
+.workspace-container .shape-point.lb {bottom: -5px; left: -5px;}
+.workspace-container .shape-point.rb {bottom: -5px; right: -5px;}
+.workspace-container .btn{
     background: #333; color: #fff; border: 1px solid #555;
     padding: 5px 15px; margin-left: 10px; border-radius: 4px; cursor: pointer;
 }
-.btn.primary{
+.workspace-container .btn.primary{
     background-color: #00e5ff; color: #000; font-weight: bold; border: none;
 }
-.btn:hover{opacity: 0.8;}
-.delete-icon{
+.workspace-container .btn:hover{opacity: 0.8;}
+.workspace-container .delete-icon{
     position: absolute; top: -10px; right: -10px;
     width: 20px; height: 20px; background-color: #ff4d4f;
     color: #fff; border-radius: 50%; display: flex;
@@ -222,6 +218,152 @@
     z-index: 101; /*确保在八个点之上 */
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.5); transition: transform 0.2s;    
 }
-.delete-icon:hover{
+.workspace-container .delete-icon:hover{
     transform: scale(1.2); background-color: #ff7875;
+}
+
+/* 保存弹窗样式 */
+.save-dialog-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+
+.save-dialog {
+    width: 450px;
+    background: #1d1e1f;
+    border: 1px solid #333;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+}
+
+.dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #333;
+}
+
+.dialog-header h3 {
+    margin: 0;
+    color: #fff;
+    font-size: 18px;
+}
+
+.dialog-close {
+    background: transparent;
+    border: none;
+    color: #999;
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.dialog-close:hover {
+    color: #ff4d4f;
+}
+
+.dialog-body {
+    padding: 24px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    color: #aaa;
+    font-size: 14px;
+}
+
+.dialog-input {
+    width: 100%;
+    padding: 10px 12px;
+    background: #333;
+    border: 1px solid #555;
+    border-radius: 4px;
+    color: #fff;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.dialog-input:focus {
+    outline: none;
+    border-color: #00e5ff;
+}
+
+.dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px 24px;
+    border-top: 1px solid #333;
+}
+
+.btn-cancel {
+    padding: 8px 20px;
+    background: #333;
+    color: #fff;
+    border: 1px solid #555;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.btn-cancel:hover {
+    background: #444;
+}
+
+.btn-save-preview {
+    padding: 8px 20px;
+    background: rgba(24, 160, 88, 0.2);
+    color: #18a058;
+    border: 1px solid #18a058;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.2s;
+}
+
+.btn-save-preview:hover {
+    background: #18a058;
+    color: #fff;
+}
+
+.btn-save-template {
+    padding: 8px 20px;
+    background: #00e5ff;
+    color: #000;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.2s;
+}
+
+.btn-save-template:hover {
+    opacity: 0.8;
+}
+
+/* 弹窗动画 */
+.fade-enter-active, .fade-leave-active {
+    transition: opacity 0.3s ease;
+}
+
+.fade-enter-from, .fade-leave-to {
+    opacity: 0;
 }
