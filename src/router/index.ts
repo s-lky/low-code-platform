@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useEidtorStore } from '../store/editor'
 
 const router = createRouter({
     history:createWebHistory(),
@@ -23,6 +24,17 @@ const router = createRouter({
         component:() => import('../views/project/index.vue')
     },
     ]
+})
+
+// 路由守卫：进入编辑器时确保画布是空白的
+router.beforeEach((to, from) => {
+  if (to.name === 'Workspace') {
+    // 如果不是从预览页返回，说明是新建，清空画布
+    if (from.name !== 'Preview') {
+      const editorStore = useEidtorStore()
+      editorStore.clearCanvas()
+    }
+  }
 })
 
 export default router

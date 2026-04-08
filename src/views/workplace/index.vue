@@ -1,22 +1,76 @@
 <script setup lang="ts">
 import { useEidtorStore } from '../../store/editor';
-import VBarChart from '../../packages/VBarChart.vue';
-import VLineChart from '../../packages/VLineChart.vue';
-import VText from '../../packages/VText.vue';
-import VPieChart from '../../packages/VPieChart.vue';
-import VScatterChart from '../../packages/VScatterChart.vue';
-import VWordCloud from '../../packages/VWordCloud.vue';
-import VFunnelChart from '../../packages/VFunnelChart.vue';
-import VAreaChart from '../../packages/VAreaChart.vue';
-import VRadarChart from '../../packages/VRadarChart.vue';
-import VHeatmapChart from '../../packages/VHeatmapChart.vue';
-import VTreeChart from '../../packages/VTreeChart.vue';
+import { registry } from '../../packages/registry';
 import DataConfigPanel from '../../components/DataConfigPanel.vue';
 import { useRouter } from 'vue-router';
-import { onMounted, onUnmounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref, computed } from 'vue';
 import './index.css' // 导入独立的 CSS 文件
 
 const router = useRouter()
+const editorStore = useEidtorStore()
+
+// 标记组件是否已注册完成（用于等待异步注册）
+const isRegistryReady = ref(false)
+
+// 右侧面板标签页切换
+const activeTab = ref('style') // 'style' | 'animation'
+
+// 自定义组件管理相关状态
+const showCustomComponentDialog = ref(false)
+const customComponentName = ref('')
+const customComponentUrl = ref('')
+const customComponents = ref<Array<{name: string; url: string}>>([])
+
+// 计算属性：获取所有已注册的组件
+// 依赖 version 响应式触发器，确保注册后 UI 能自动更新
+const registeredComponents = computed(() => {
+  // 读取 version 建立依赖关系
+  const _version = registry.getVersion().value
+  return registry.list()
+})
+
+// 同步到 localStorage 的辅助函数（用于持久化已加载的自定义组件元数据）
+const syncCustomComponents = () => {
+  const custom = registeredComponents.value.filter(item => item.remoteUrl)
+  customComponents.value = custom.map(item => ({ name: item.name, url: item.remoteUrl! }))
+}
+
+// 对齐功能
+const alignLeft = () => {
+  if (editorStore.curComponent) {
+    editorStore.curComponent.style.left = 0
+  }
+}
+
+const alignCenterH = () => {
+  if (editorStore.curComponent) {
+    editorStore.curComponent.style.left = (editorStore.canvasConfig.width - editorStore.curComponent.style.width) / 2
+  }
+}
+
+const alignRight = () => {
+  if (editorStore.curComponent) {
+    editorStore.curComponent.style.left = editorStore.canvasConfig.width - editorStore.curComponent.style.width
+  }
+}
+
+const alignTop = () => {
+  if (editorStore.curComponent) {
+    editorStore.curComponent.style.top = 0
+  }
+}
+
+const alignCenterV = () => {
+  if (editorStore.curComponent) {
+    editorStore.curComponent.style.top = (editorStore.canvasConfig.height - editorStore.curComponent.style.height) / 2
+  }
+}
+
+const alignBottom = () => {
+  if (editorStore.curComponent) {
+    editorStore.curComponent.style.top = editorStore.canvasConfig.height - editorStore.curComponent.style.height
+  }
+}
 
 // 处理键盘删除事件
 const handleKeyDown = (e: KeyboardEvent) => {
@@ -36,9 +90,47 @@ const handleKeyDown = (e: KeyboardEvent) => {
 }
 
 // 页面挂载时执行
-onMounted(() => {
+onMounted(async () => {
   // 监听全局键盘事件
   window.addEventListener('keydown', handleKeyDown)
+  
+  // ========== 组件注册中心：静态注册所有内置组件 ==========
+  // 动态 import 所有内置组件
+  const modules = await Promise.all([
+    import('../../packages/VBarChart.vue'),
+    import('../../packages/VLineChart.vue'),
+    import('../../packages/VText.vue'),
+    import('../../packages/VPieChart.vue'),
+    import('../../packages/VScatterChart.vue'),
+    import('../../packages/VWordCloud.vue'),
+    import('../../packages/VFunnelChart.vue'),
+    import('../../packages/VAreaChart.vue'),
+    import('../../packages/VRadarChart.vue'),
+    import('../../packages/VHeatmapChart.vue'),
+    import('../../packages/VTreeChart.vue'),
+  ])
+  
+  // 批量注册到 Registry（添加中文显示名称）
+  registry.registerBatch([
+    { name: 'VBarChart', component: modules[0].default, meta: { icon: '柱状图', category: 'chart' } },
+    { name: 'VLineChart', component: modules[1].default, meta: { icon: '折线图', category: 'chart' } },
+    { name: 'VText', component: modules[2].default, meta: { icon: '文本', category: 'text' } },
+    { name: 'VPieChart', component: modules[3].default, meta: { icon: '饼图', category: 'chart' } },
+    { name: 'VScatterChart', component: modules[4].default, meta: { icon: '散点图', category: 'chart' } },
+    { name: 'VWordCloud', component: modules[5].default, meta: { icon: '词云图', category: 'chart' } },
+    { name: 'VFunnelChart', component: modules[6].default, meta: { icon: '漏斗图', category: 'chart' } },
+    { name: 'VAreaChart', component: modules[7].default, meta: { icon: '面积图', category: 'chart' } },
+    { name: 'VRadarChart', component: modules[8].default, meta: { icon: '雷达图', category: 'chart' } },
+    { name: 'VHeatmapChart', component: modules[9].default, meta: { icon: '热力图', category: 'chart' } },
+    { name: 'VTreeChart', component: modules[10].default, meta: { icon: '树形图', category: 'chart' } },
+  ])
+  
+  // 恢复自定义组件并等待注册完成
+  const savedCustom = registry.restoreFromStorage()
+  customComponents.value = savedCustom
+  
+  // 标记为已就绪
+  isRegistryReady.value = true
   
   // 检查是否有从模板加载的数据
   const savedData = localStorage.getItem('my-go-view-data')
@@ -118,6 +210,56 @@ const cancelSave = () => {
 //跳转预览页
 const goToPreview = () =>{
     router.push('/preview')
+}
+
+// ========== 自定义组件管理功能 ==========
+
+// 添加自定义组件
+const addCustomComponent = async () => {
+  if (!customComponentName.value.trim() || !customComponentUrl.value.trim()) {
+    alert('请填写组件名称和URL！')
+    return
+  }
+  
+  try {
+    // 动态加载远程组件
+    await registry.loadRemoteComponent(customComponentName.value.trim(), customComponentUrl.value.trim())
+    
+    // 更新自定义组件列表
+    customComponents.value.push({
+      name: customComponentName.value.trim(),
+      url: customComponentUrl.value.trim()
+    })
+    
+    // 保存到 localStorage
+    registry.saveToStorage(customComponents.value)
+    
+    // 关闭弹窗
+    showCustomComponentDialog.value = false
+    customComponentName.value = ''
+    customComponentUrl.value = ''
+    
+    alert('自定义组件添加成功！')
+  } catch (error) {
+    console.error('添加自定义组件失败:', error)
+    alert('添加失败: ' + (error as Error).message)
+  }
+}
+
+// 删除自定义组件
+const removeCustomComponent = (name: string) => {
+  if (confirm(`确定要删除自定义组件 ${name} 吗？`)) {
+    customComponents.value = customComponents.value.filter(c => c.name !== name)
+    registry.saveToStorage(customComponents.value)
+    alert('删除成功！刷新页面后生效。')
+  }
+}
+
+//关闭自定义组件弹窗
+const closeCustomDialog = () => {
+  showCustomComponentDialog.value = false
+  customComponentName.value = ''
+  customComponentUrl.value = ''
 }
 
 //定义八个方向的控制点，以及他们对应的鼠标光标样式
@@ -227,22 +369,18 @@ const handleMouseDown = (e:MouseEvent,item:any) => {
     document.addEventListener('mouseup',up)
 }
 
-const editorStore = useEidtorStore()
-
 // 低代码核心：组件映射表（根据JSON里的字符串，找到对应的vue组件）
-const componentMap: Record<string,any> = {
-    VBarChart,
-    VLineChart,
-    VText,
-    VPieChart,
-    VScatterChart,
-    VWordCloud,
-    VFunnelChart,
-    VAreaChart,
-    VRadarChart,
-    VHeatmapChart,
-    VTreeChart,
-}
+// 使用 registry.getVersion() 确保 Vue 响应式追踪到注册变化
+const componentMap: Record<string,any> = computed(() => {
+    // 依赖 version ref，当有新组件注册时自动重新计算
+    const _version = registry.getVersion().value
+    
+    const map: Record<string,any> = {}
+    registeredComponents.value.forEach(item => {
+        map[item.name] = item.component
+    })
+    return map
+})
 
 //左侧拖拽开始把“我是谁”这个信息存入包裹里
 const handleDragStart = (e:DragEvent,componentName:string) =>{
@@ -309,96 +447,26 @@ const handleDrop = (e: DragEvent) => {
 
             <!-- 左侧：图表物料库 -->
              <aside class="left-panel">
-                <div class="panel-title">图表组件库</div>
-                <div class="component-list">
-                    <!-- 文本组件 -->
+                <div class="panel-title">
+                  图表组件库
+                  <button class="add-custom-btn" @click="showCustomComponentDialog = true" title="添加自定义组件">+</button>
+                </div>
+                <div class="component-list" v-if="isRegistryReady">
+                    <!-- 动态渲染所有已注册的组件 -->
                      <div 
+                        v-for="item in registeredComponents"
+                        :key="item.name"
                         class="mock-item"
                         draggable="true"
-                        @dragstart="handleDragStart($event,'VText')"
+                        @dragstart="handleDragStart($event, item.name)"
+                        :title="item.remoteUrl ? '自定义组件' : '内置组件'"
+                        :class="{ 'custom-item': item.remoteUrl }"
                      >
-                     文本
+                        {{ item.icon }}
                      </div>
-                    <!-- 柱状图 -->
-                     <div 
-                        class="mock-item"
-                        draggable="true"
-                        @dragstart="handleDragStart($event,'VBarChart')"
-                     >
-                     柱状图
-                     </div>
-                     <!-- 折线图 -->
-                     <div
-                        class="mock-item"
-                        draggable="true"
-                        @dragstart="handleDragStart($event,'VLineChart')"
-                     >
-                        折线图
-                     </div>
-                     <!-- 饼图 -->
-                     <div
-                        class="mock-item"
-                        draggable="true"
-                        @dragstart="handleDragStart($event,'VPieChart')"
-                     >
-                        饼图
-                     </div>
-                     <!-- 散点图 -->
-                     <div
-                        class="mock-item"
-                        draggable="true"
-                        @dragstart="handleDragStart($event,'VScatterChart')"
-                     >
-                        散点图
-                     </div>
-                     <!-- 词云图 -->
-                     <div
-                        class="mock-item"
-                        draggable="true"
-                        @dragstart="handleDragStart($event,'VWordCloud')"
-                     >
-                        词云图
-                     </div>
-                     <!-- 漏斗图 -->
-                     <div
-                        class="mock-item"
-                        draggable="true"
-                        @dragstart="handleDragStart($event,'VFunnelChart')"
-                     >
-                        漏斗图
-                     </div>
-                     <!-- 面积图 -->
-                     <div
-                        class="mock-item"
-                        draggable="true"
-                        @dragstart="handleDragStart($event,'VAreaChart')"
-                     >
-                        面积图
-                     </div>
-                     <!-- 雷达图 -->
-                     <div
-                        class="mock-item"
-                        draggable="true"
-                        @dragstart="handleDragStart($event,'VRadarChart')"
-                     >
-                        雷达图
-                     </div>
-                     <!-- 热力图 -->
-                     <div
-                        class="mock-item"
-                        draggable="true"
-                        @dragstart="handleDragStart($event,'VHeatmapChart')"
-                     >
-                        热力图
-                     </div>
-                     <!-- 树形图 -->
-                     <div
-                        class="mock-item"
-                        draggable="true"
-                        @dragstart="handleDragStart($event,'VTreeChart')"
-                     >
-                        树形图
-                     </div>
+                </div>
+                <div class="component-list" v-else>
+                    <div class="mock-item" style="justify-content: center; color: #666;">加载中...</div>
                 </div>
             </aside>
 
@@ -414,7 +482,7 @@ const handleDrop = (e: DragEvent) => {
                         <div class="ruler-x" :style="{ width:editorStore.canvasConfig.width + 'px' }">
                         <!-- 纯前端动态生成刻度数字，每100px一个 -->
                          <span
-                            v-for="n in Math.ceil(editorStore.canvasConfig.width / 100) + 1"
+                            v-for="n in Math.ceil(editorStore.canvasConfig.width / 100)"
                             :key="'x' + n"
                             class="tick-label-x"
                             :style="{ left: (n-1)*100 + 'px' }"
@@ -427,7 +495,7 @@ const handleDrop = (e: DragEvent) => {
                         <!-- 左侧标尺的高度跟随pinia里的画布高度 -->
                         <div class="ruler-y" :style="{ height: editorStore.canvasConfig.height + 'px' }">
                             <span
-                                v-for="n in Math.ceil(editorStore.canvasConfig.height / 100) + 1"
+                                v-for="n in Math.ceil(editorStore.canvasConfig.height / 100)"
                                 :key="'y' + n"
                                 class="tick-label-y"
                                 :style="{ top: (n-1)*100 + 'px' }"
@@ -499,16 +567,163 @@ const handleDrop = (e: DragEvent) => {
 
              <!-- 右侧：属性配置面板 -->
               <aside class="right-panel">
-                <!-- 使用数据配置面板组件 -->
-                <DataConfigPanel 
-                  v-if="editorStore.curComponent"
-                  v-model="editorStore.curComponent.dataConfig"
-                  :cur-component="editorStore.curComponent"
-                />
+                <template v-if="editorStore.curComponent">
+                  <!-- 顶部标签页切换 -->
+                  <div class="panel-tabs">
+                    <div 
+                      class="panel-tab" 
+                      :class="{ active: activeTab === 'style' }"
+                      @click="activeTab = 'style'"
+                    >
+                      <span class="tab-icon"></span>
+                      <span>定制</span>
+                    </div>
+                    <div 
+                      class="panel-tab" 
+                      :class="{ active: activeTab === 'animation' }"
+                      @click="activeTab = 'animation'"
+                    >
+                      <span class="tab-icon"></span>
+                      <span>动画</span>
+                    </div>
+                  </div>
+
+                  <!-- 定制选项卡内容 -->
+                  <div v-show="activeTab === 'style'" class="tab-content">
+                    <!-- 组件名称 -->
+                    <div class="config-section">
+                      <div class="section-label">
+                        <span>名称</span>
+                        <span class="component-count">{{ editorStore.curComponent.component }} - {{ editorStore.curComponent.id.slice(-4) }}</span>
+                      </div>
+                      <input 
+                        type="text" 
+                        v-model="editorStore.curComponent.propValue.title"
+                        class="name-input"
+                        placeholder="请输入组件名称"
+                      />
+                    </div>
+
+                    <!-- 尺寸设置 -->
+                    <div class="config-section">
+                      <div class="section-label">尺寸</div>
+                      <div class="size-row">
+                        <div class="size-item">
+                          <span class="size-label">宽度</span>
+                          <div class="number-control">
+                            <input 
+                              type="number" 
+                              v-model.number="editorStore.curComponent.style.width"
+                              class="number-input"
+                            />
+                            <div class="control-btns">
+                              <button class="ctrl-btn" @click="editorStore.curComponent.style.width = Math.max(20, editorStore.curComponent.style.width - 10)">−</button>
+                              <button class="ctrl-btn" @click="editorStore.curComponent.style.width += 10">+</button>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="size-item">
+                          <span class="size-label">高度</span>
+                          <div class="number-control">
+                            <input 
+                              type="number" 
+                              v-model.number="editorStore.curComponent.style.height"
+                              class="number-input"
+                            />
+                            <div class="control-btns">
+                              <button class="ctrl-btn" @click="editorStore.curComponent.style.height = Math.max(20, editorStore.curComponent.style.height - 10)">−</button>
+                              <button class="ctrl-btn" @click="editorStore.curComponent.style.height += 10">+</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- 对齐方式 -->
+                    <div class="config-section">
+                      <div class="align-btns">
+                        <button class="align-btn" @click="alignLeft" title="左对齐">
+                          <svg viewBox="0 0 24 24" width="18" height="18">
+                            <path fill="currentColor" d="M3 3v18h2V3H3zm16 4H7v2h12V7zm-4 4H7v2h8v-2zm4 4H7v2h12v-2z"/>
+                          </svg>
+                        </button>
+                        <button class="align-btn" @click="alignCenterH" title="水平居中">
+                          <svg viewBox="0 0 24 24" width="18" height="18">
+                            <path fill="currentColor" d="M11 3v18h2V3h-2zM3 7v2h18V7H3zm0 8v2h18v-2H3z"/>
+                          </svg>
+                        </button>
+                        <button class="align-btn" @click="alignRight" title="右对齐">
+                          <svg viewBox="0 0 24 24" width="18" height="18">
+                            <path fill="currentColor" d="M19 3v18h2V3h-2zm-12 4h12V7H7v2zm4 4h8v-2h-8v2zm-4 4h12v-2H7v2z"/>
+                          </svg>
+                        </button>
+                        <button class="align-btn" @click="alignTop" title="顶部对齐">
+                          <svg viewBox="0 0 24 24" width="18" height="18">
+                            <path fill="currentColor" d="M3 3h18v2H3V3zm4 16V7h2v12H7zm8 0V7h2v12h-2z"/>
+                          </svg>
+                        </button>
+                        <button class="align-btn" @click="alignCenterV" title="垂直居中">
+                          <svg viewBox="0 0 24 24" width="18" height="18">
+                            <path fill="currentColor" d="M3 11v2h18v-2H3zm4-8v8h2V3H7zm8 0v8h2V3h-2z"/>
+                          </svg>
+                        </button>
+                        <button class="align-btn" @click="alignBottom" title="底部对齐">
+                          <svg viewBox="0 0 24 24" width="18" height="18">
+                            <path fill="currentColor" d="M3 19h18v2H3v-2zm4-14v12h2V5H7zm8 0v12h2V5h-2z"/>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- 位置设置 -->
+                    <div class="config-section">
+                      <div class="section-label">位置</div>
+                      <div class="size-row">
+                        <div class="size-item">
+                          <span class="size-label">上</span>
+                          <div class="number-control">
+                            <input 
+                              type="number" 
+                              v-model.number="editorStore.curComponent.style.top"
+                              class="number-input"
+                            />
+                            <div class="control-btns">
+                              <button class="ctrl-btn" @click="editorStore.curComponent.style.top = Math.max(0, editorStore.curComponent.style.top - 10)">−</button>
+                              <button class="ctrl-btn" @click="editorStore.curComponent.style.top += 10">+</button>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="size-item">
+                          <span class="size-label">左</span>
+                          <div class="number-control">
+                            <input 
+                              type="number" 
+                              v-model.number="editorStore.curComponent.style.left"
+                              class="number-input"
+                            />
+                            <div class="control-btns">
+                              <button class="ctrl-btn" @click="editorStore.curComponent.style.left = Math.max(0, editorStore.curComponent.style.left - 10)">−</button>
+                              <button class="ctrl-btn" @click="editorStore.curComponent.style.left += 10">+</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 动画选项卡内容 -->
+                  <div v-show="activeTab === 'animation'" class="tab-content">
+                    <div class="empty-state">
+                      <div class="empty-icon"></div>
+                      <p>动画效果即将上线</p>
+                    </div>
+                  </div>
+                </template>
                 <!-- 否则提示选中 -->
-                <p v-else style="color: #666; font-size: 14px; text-align: center; margin-top: 50px;">
-                  请先在画布中选中组件
-                </p>
+                <div v-else class="no-selection">
+                  <div class="empty-icon"></div>
+                  <p>请先在画布中选中组件</p>
+                </div>
               </aside>
 
           </main>
@@ -539,6 +754,57 @@ const handleDrop = (e: DragEvent) => {
               <button class="btn-cancel" @click="cancelSave">取消</button>
               <button class="btn-save-preview" @click="saveToPreview">保存到预览</button>
               <button class="btn-save-template" @click="confirmSaveToTemplate">保存到模板</button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- 自定义组件添加弹窗 -->
+    <Teleport to="body">
+      <Transition name="fade">
+        <div v-if="showCustomComponentDialog" class="custom-dialog-overlay" @click="closeCustomDialog">
+          <div class="custom-dialog" @click.stop>
+            <div class="dialog-header">
+              <h3>🔌 添加自定义组件</h3>
+              <button class="dialog-close" @click="closeCustomDialog">×</button>
+            </div>
+            <div class="dialog-body">
+              <div class="form-group">
+                <label>组件名称：</label>
+                <input 
+                  type="text" 
+                  v-model="customComponentName" 
+                  placeholder="例如: MyCustomChart"
+                  class="dialog-input"
+                />
+              </div>
+              <div class="form-group">
+                <label>组件URL：</label>
+                <input 
+                  type="text" 
+                  v-model="customComponentUrl" 
+                  placeholder="例如: http://example.com/MyCustomChart.js"
+                  class="dialog-input"
+                />
+                <p class="form-hint">支持 ESM 模块或 UMD 模块，组件需要 default export 或命名导出</p>
+              </div>
+              <div class="form-group" v-if="customComponents.length > 0">
+                <label>已添加的自定义组件：</label>
+                <div class="custom-list">
+                  <div class="custom-list-item" v-for="item in customComponents" :key="item.name">
+                    <span class="custom-list-name"> {{ item.name }}</span>
+                    <div class="custom-list-actions">
+                      <span class="custom-list-url" :title="item.url">{{ item.url }}</span>
+                      <button class="custom-list-delete" @click="removeCustomComponent(item.name)">删除</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="dialog-footer">
+              <button class="btn-cancel" @click="closeCustomDialog">关闭</button>
+              <button class="btn-save-template" @click="addCustomComponent">添加组件</button>
             </div>
           </div>
         </div>

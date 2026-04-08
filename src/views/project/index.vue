@@ -347,6 +347,8 @@ const showTemplateMarket = ref(false)
 
 // 新建项目（空白项目）
 const createFromNew = () => {
+  // 清空 localStorage 中的编辑器数据，确保新建是空白画布
+  localStorage.removeItem('my-go-view-data')
   showCreateDialog.value = false
   router.push({ path: '/editor' })
 }

@@ -134,15 +134,274 @@
     background-size: 20px 20px;
     overflow: hidden;
 }
-.workspace-container .right-panel{
+.workspace-container .right-panel {
     width: 300px;
     background-color: #1d1e1f;
     border-left: 1px solid #000;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 右侧面板标签页 */
+.panel-tabs {
+    display: flex;
+    border-bottom: 1px solid #333;
+    background: #1d1e1f;
+    padding: 0 8px;
+}
+
+.panel-tab {
+    flex: 1;
+    padding: 12px 8px;
+    text-align: center;
+    color: #999;
+    font-size: 12px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.panel-tab:hover {
+    color: #ccc;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.panel-tab.active {
+    color: #00e5ff;
+    border-bottom-color: #00e5ff;
+}
+
+.tab-icon {
+    font-size: 16px;
+}
+
+/* 标签页内容区 */
+.tab-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+}
+
+/* 配置区块 */
+.config-section {
+    margin-bottom: 20px;
+}
+
+.section-label {
+    color: #aaa;
+    font-size: 12px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.component-count {
+    color: #666;
+    font-size: 11px;
+}
+
+/* 名称输入框 */
+.name-input {
+    width: 100%;
+    padding: 8px 12px;
+    background: #333;
+    border: 1px solid #555;
+    border-radius: 4px;
+    color: #fff;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.name-input:focus {
+    outline: none;
+    border-color: #00e5ff;
+}
+
+/* 尺寸行 */
+.size-row {
+    display: flex;
+    gap: 12px;
+}
+
+.size-item {
+    flex: 1;
+}
+
+.size-label {
+    display: block;
+    color: #888;
+    font-size: 11px;
+    margin-bottom: 6px;
+}
+
+/* 数字控制 */
+.number-control {
+    display: flex;
+    align-items: center;
+    background: #333;
+    border: 1px solid #555;
+    border-radius: 4px;
     overflow: hidden;
+}
+
+.number-input {
+    flex: 1;
+    padding: 6px 8px;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 13px;
+    width: 100%;
+}
+
+.number-input:focus {
+    outline: none;
+}
+
+/* 移除数字输入框的上下箭头 */
+.number-input::-webkit-inner-spin-button,
+.number-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.number-input[type=number] {
+    -moz-appearance: textfield;
+}
+
+.control-btns {
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid #555;
+}
+
+.ctrl-btn {
+    background: transparent;
+    border: none;
+    color: #999;
+    padding: 2px 8px;
+    cursor: pointer;
+    font-size: 12px;
+    line-height: 1;
+}
+
+.ctrl-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #00e5ff;
+}
+
+.ctrl-btn:first-child {
+    border-bottom: 1px solid #555;
+}
+
+/* 对齐按钮 */
+.align-btns {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.align-btn {
+    width: 36px;
+    height: 36px;
+    background: #333;
+    border: 1px solid #555;
+    border-radius: 4px;
+    color: #ccc;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.align-btn:hover {
+    background: #444;
+    border-color: #00e5ff;
+    color: #00e5ff;
+}
+
+/* 空状态 */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: #666;
+}
+
+.empty-state .empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.empty-state p {
+    margin: 0;
+    font-size: 14px;
+    text-align: center;
+}
+
+/* 未选中组件提示 */
+.no-selection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #666;
+}
+
+.no-selection .empty-icon {
+    width: 60px;
+    height: 60px;
+    border: 2px dashed #444;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.no-selection p {
+    font-size: 14px;
+    text-align: center;
 }
 .workspace-container .panel-title{
     padding: 10px; font-weight: bold;
     border-bottom: 1px solid #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* 添加自定义组件按钮 */
+.add-custom-btn {
+    width: 24px;
+    height: 24px;
+    background: rgba(0, 229, 255, 0.1);
+    border: 1px solid rgba(0, 229, 255, 0.3);
+    border-radius: 4px;
+    color: #00e5ff;
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.add-custom-btn:hover {
+    background: #00e5ff;
+    color: #000;
+}
+
+/* 自定义组件样式 */
+.mock-item.custom-item {
+    background: rgba(0, 229, 255, 0.1);
+    border: 1px dashed rgba(0, 229, 255, 0.3);
 }
 .workspace-container .mock-item{
     margin: 10px; padding: 10px;
@@ -357,6 +616,93 @@
 
 .btn-save-template:hover {
     opacity: 0.8;
+}
+
+/* 自定义组件弹窗样式 */
+.custom-dialog-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+
+.custom-dialog {
+    width: 520px;
+    background: #1d1e1f;
+    border: 1px solid #333;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+}
+
+.form-hint {
+    font-size: 12px;
+    color: #888;
+    margin: 4px 0 0;
+    line-height: 1.4;
+}
+
+/* 自定义组件列表 */
+.custom-list {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #333;
+    border-radius: 4px;
+}
+
+.custom-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border-bottom: 1px solid #333;
+    background: #2a2a2a;
+}
+
+.custom-list-item:last-child {
+    border-bottom: none;
+}
+
+.custom-list-name {
+    font-weight: bold;
+    color: #00e5ff;
+    font-size: 13px;
+}
+
+.custom-list-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.custom-list-url {
+    font-size: 11px;
+    color: #888;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.custom-list-delete {
+    padding: 2px 10px;
+    background: rgba(255, 77, 79, 0.1);
+    border: 1px solid rgba(255, 77, 79, 0.3);
+    border-radius: 4px;
+    color: #ff4d4f;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+}
+
+.custom-list-delete:hover {
+    background: #ff4d4f;
+    color: #fff;
 }
 
 /* 弹窗动画 */
