@@ -1011,7 +1011,7 @@ const handleDrop = (e: DragEvent) => {
         <div v-if="showCustomComponentDialog" class="custom-dialog-overlay" @click="closeCustomDialog">
           <div class="custom-dialog" @click.stop>
             <div class="dialog-header">
-              <h3>🔌 添加自定义组件</h3>
+              <h3>添加自定义组件</h3>
               <button class="dialog-close" @click="closeCustomDialog">×</button>
             </div>
             <div class="dialog-body">
