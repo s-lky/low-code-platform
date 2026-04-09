@@ -966,6 +966,10 @@
 .workspace-container .btn{
     background: #333; color: #fff; border: 1px solid #555;
     padding: 5px 15px; margin-left: 10px; border-radius: 4px; cursor: pointer;
+    outline: none;
+}
+.workspace-container .btn:focus {
+    outline: none;
 }
 .workspace-container .btn.primary{
     background-color: #00e5ff; color: #000; font-weight: bold; border: none;

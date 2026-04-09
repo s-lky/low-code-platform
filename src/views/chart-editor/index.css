@@ -1,0 +1,493 @@
+.chart-editor-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #f5f7fa;
+  transition: background 0.3s;
+}
+
+/* 黑夜模式 */
+.chart-editor-container.dark-theme {
+  background: #151515;
+}
+
+.chart-editor-container.dark-theme .chart-editor-header,
+.chart-editor-container.dark-theme .chart-preview-area,
+.chart-editor-container.dark-theme .data-editor-area {
+  background: #1d1e1f;
+  border-color: #000;
+}
+
+.chart-editor-container.dark-theme .chart-editor-header {
+  background: #222;
+}
+
+.chart-editor-container.dark-theme .page-title {
+  color: #fff;
+}
+
+.chart-editor-container.dark-theme .type-btn {
+  background: #333;
+  border-color: #555;
+  color: #ccc;
+}
+
+.chart-editor-container.dark-theme .type-btn:hover {
+  border-color: #00e5ff;
+  color: #00e5ff;
+}
+
+.chart-editor-container.dark-theme .type-btn.active {
+  background: #00e5ff;
+  border-color: #00e5ff;
+  color: #fff;
+}
+
+.chart-editor-container.dark-theme .btn {
+  background: #333;
+  border-color: #555;
+  color: #ccc;
+}
+
+.chart-editor-container.dark-theme .btn:hover {
+  border-color: #00e5ff;
+  color: #00e5ff;
+}
+
+.chart-editor-container.dark-theme .btn.primary {
+  background: #00e5ff;
+  border-color: #00e5ff;
+  color: #fff;
+}
+
+.chart-editor-container.dark-theme .theme-btn {
+  font-size: 18px;
+}
+
+.chart-editor-container.dark-theme .title-input {
+  background: #333;
+  border-color: #555;
+  color: #fff;
+}
+
+.chart-editor-container.dark-theme .title-input:focus {
+  border-color: #00e5ff;
+}
+
+.chart-editor-container.dark-theme .tab-btn {
+  color: #888;
+}
+
+.chart-editor-container.dark-theme .tab-btn.active {
+  color: #00e5ff;
+}
+
+.chart-editor-container.dark-theme .tab-btn.active::after {
+  background: #00e5ff;
+}
+
+.chart-editor-container.dark-theme .btn-small {
+  background: #333;
+  border-color: #555;
+  color: #ccc;
+}
+
+.chart-editor-container.dark-theme .btn-small:hover:not(:disabled) {
+  border-color: #00e5ff;
+  color: #00e5ff;
+}
+
+.chart-editor-container.dark-theme .excel-table th,
+.chart-editor-container.dark-theme .excel-table td {
+  border-color: #333;
+}
+
+.chart-editor-container.dark-theme .row-header-cell,
+.chart-editor-container.dark-theme .column-header,
+.chart-editor-container.dark-theme .row-header {
+  background: #1a1a1c;
+  color: #fff;
+}
+
+.chart-editor-container.dark-theme .header-input,
+.chart-editor-container.dark-theme .row-header-input,
+.chart-editor-container.dark-theme .cell-input {
+  color: #fff;
+}
+
+.chart-editor-container.dark-theme .header-input:focus,
+.chart-editor-container.dark-theme .row-header-input:focus,
+.chart-editor-container.dark-theme .cell-input:focus {
+  background: rgba(0, 229, 255, 0.1);
+}
+
+.chart-editor-container.dark-theme .chart-wrapper {
+  background: #0f1011;
+  border-radius: 8px;
+}
+
+/* 顶部工具栏 */
+.chart-editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+  padding: 0 20px;
+  background: #fff;
+  border-bottom: 1px solid #e4e7ed;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.back-btn:hover {
+  background: #f5f7fa;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.chart-type-selector {
+  display: flex;
+  gap: 8px;
+}
+
+.type-btn {
+  padding: 8px 16px;
+  border: 1px solid #dcdfe6;
+  background: #fff;
+  color: #606266;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.type-btn:hover {
+  border-color: #409eff;
+  color: #409eff;
+}
+
+.type-btn.active {
+  background: #409eff;
+  border-color: #409eff;
+  color: #fff;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+}
+
+/* 图标按钮样式 */
+.header-right .icon-btn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* 按钮样式 */
+.btn {
+  padding: 8px 20px;
+  border: 1px solid #dcdfe6;
+  background: #fff;
+  color: #606266;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+  outline: none;
+}
+
+.btn:focus {
+  outline: none;
+}
+
+.btn:hover {
+  border-color: #409eff;
+  color: #409eff;
+}
+
+.btn.primary {
+  background: #409eff;
+  border-color: #409eff;
+  color: #fff;
+}
+
+.btn.primary:hover {
+  background: #66b1ff;
+  border-color: #66b1ff;
+}
+
+.theme-btn {
+  font-size: 18px;
+  padding: 6px 12px;
+}
+
+.btn-small {
+  padding: 6px 12px;
+  border: 1px solid #dcdfe6;
+  background: #fff;
+  color: #606266;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.btn-small:hover:not(:disabled) {
+  border-color: #409eff;
+  color: #409eff;
+}
+
+.btn-small:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 主内容区 */
+.chart-editor-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* 左侧图表预览区 */
+.chart-preview-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-right: 1px solid #e4e7ed;
+}
+
+.chart-title-input {
+  padding: 20px 20px 0;
+}
+
+.title-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #dcdfe6;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #303133;
+  transition: border-color 0.2s;
+}
+
+.title-input:focus {
+  outline: none;
+  border-color: #409eff;
+}
+
+.chart-wrapper {
+  flex: 1;
+  padding: 20px;
+  overflow: hidden;
+}
+
+.chart-container {
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+}
+
+/* 右侧数据编辑区 */
+.data-editor-area {
+  width: 500px;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+}
+
+.data-editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  height: 50px;
+  border-bottom: 1px solid #e4e7ed;
+}
+
+.editor-tabs {
+  display: flex;
+  gap: 20px;
+}
+
+.tab-btn {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #606266;
+  cursor: pointer;
+  font-size: 14px;
+  position: relative;
+}
+
+.tab-btn.active {
+  color: #409eff;
+  font-weight: 500;
+}
+
+.tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -14px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #409eff;
+}
+
+.editor-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Excel表格 */
+.excel-table-wrapper {
+  flex: 1;
+  overflow: auto;
+  padding: 20px;
+}
+
+.excel-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.excel-table th,
+.excel-table td {
+  border: 1px solid #dcdfe6;
+  padding: 0;
+}
+
+.row-header-cell {
+  width: 40px;
+  background: #f5f7fa;
+  border: 1px solid #dcdfe6;
+}
+
+.column-header {
+  min-width: 100px;
+  background: #f5f7fa;
+  font-weight: 500;
+  color: #303133;
+}
+
+.header-input {
+  width: 100%;
+  padding: 8px;
+  border: none;
+  background: transparent;
+  text-align: center;
+  font-size: 13px;
+  color: #303133;
+}
+
+.header-input:focus {
+  outline: none;
+  background: #fff;
+}
+
+.row-header {
+  width: 40px;
+  background: #f5f7fa;
+  font-weight: 500;
+  color: #303133;
+}
+
+.row-header-input {
+  width: 100%;
+  padding: 8px;
+  border: none;
+  background: transparent;
+  text-align: center;
+  font-size: 13px;
+  color: #303133;
+}
+
+.row-header-input:focus {
+  outline: none;
+  background: #fff;
+}
+
+.data-cell {
+  padding: 0;
+}
+
+.cell-input {
+  width: 100%;
+  padding: 8px;
+  border: none;
+  background: transparent;
+  text-align: center;
+  font-size: 13px;
+  color: #303133;
+}
+
+.cell-input:focus {
+  outline: none;
+  background: #ecf5ff;
+}
+
+.table-actions {
+  display: flex;
+  gap: 8px;
+  padding: 16px 0 0;
+  justify-content: center;
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+  .data-editor-area {
+    width: 400px;
+  }
+}
+
+@media (max-width: 900px) {
+  .chart-editor-content {
+    flex-direction: column;
+  }
+  
+  .chart-preview-area {
+    border-right: none;
+    border-bottom: 1px solid #e4e7ed;
+  }
+  
+  .data-editor-area {
+    width: 100%;
+    min-height: 400px;
+  }
+}

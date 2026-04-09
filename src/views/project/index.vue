@@ -130,9 +130,13 @@
             </div>
             <div class="dialog-body">
               <div class="create-options">
-                <button class="create-option-btn" @click="createFromNew">
-                  <span class="option-icon"></span>
-                  <span class="option-label">新项目</span>
+                <button class="create-option-btn" @click="createChartEditor">
+                  <span class="option-icon">📊</span>
+                  <span class="option-label">生成图表</span>
+                </button>
+                <button class="create-option-btn" @click="createComponentEditor">
+                  <span class="option-icon">🧩</span>
+                  <span class="option-label">组件编辑</span>
                 </button>
                 <button class="create-option-btn" @click="showTemplateList = true">
                   <span class="option-icon">📁</span>
@@ -345,8 +349,17 @@ const showCreateDialog = ref(false)
 const showTemplateList = ref(false)
 const showTemplateMarket = ref(false)
 
-// 新建项目（空白项目）
-const createFromNew = () => {
+// 生成图表编辑器
+const createChartEditor = () => {
+  // 清空 localStorage 中的编辑器数据
+  localStorage.removeItem('my-go-view-data')
+  localStorage.removeItem('chart-editor-data')
+  showCreateDialog.value = false
+  router.push({ path: '/chart-editor' })
+}
+
+// 组件编辑器（原新项目）
+const createComponentEditor = () => {
   // 清空 localStorage 中的编辑器数据，确保新建是空白画布
   localStorage.removeItem('my-go-view-data')
   showCreateDialog.value = false
@@ -359,11 +372,23 @@ const createFromTemplate = (template: any) => {
     alert('模板数据不完整！')
     return
   }
-  // 将模板数据保存到 localStorage，供编辑器加载
-  localStorage.setItem('my-go-view-data', template.data)
-  showTemplateList.value = false
-  showCreateDialog.value = false
-  router.push({ path: '/editor' })
+  
+  // 判断是否是图表模板
+  const isChartTemplate = template.type === 'chart'
+  
+  if (isChartTemplate) {
+    // 图表模板：将数据保存到 chart-editor-data
+    localStorage.setItem('chart-editor-data', template.data)
+    showTemplateList.value = false
+    showCreateDialog.value = false
+    router.push({ path: '/chart-editor' })
+  } else {
+    // 组件模板：将数据保存到 my-go-view-data
+    localStorage.setItem('my-go-view-data', template.data)
+    showTemplateList.value = false
+    showCreateDialog.value = false
+    router.push({ path: '/editor' })
+  }
 }
 
 const editProject = (id: number) => {

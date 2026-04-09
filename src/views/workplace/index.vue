@@ -134,6 +134,11 @@ const syncCustomComponents = () => {
   customComponents.value = custom.map(item => ({ name: item.name, url: item.remoteUrl! }))
 }
 
+// 返回主页
+const goBack = () => {
+  router.push('/')
+}
+
 // 对齐功能
 const alignLeft = () => {
   if (editorStore.curComponent) {
@@ -392,7 +397,7 @@ const cancelSave = () => {
 
 //跳转预览页
 const goToPreview = () =>{
-    router.push('/preview')
+    router.push({ path: '/preview', query: { from: 'editor' } })
 }
 
 // ========== 自定义组件管理功能 ==========
@@ -650,6 +655,11 @@ const handleDrop = (e: DragEvent) => {
                  </button>
                  <button class="btn" @click="goToPreview">预览</button>
                  <button class="btn primary" @click="saveData">保存</button>
+                 <button class="btn icon-btn" @click="goBack" title="返回主页">
+                   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                     <polyline points="15 18 9 12 15 6"/>
+                   </svg>
+                 </button>
             </div>
          </header>
 

@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import * as echarts from 'echarts'
+import { nextTick, markRaw, watch } from 'vue'
 // 导入所有组件
 import VBarChart from '../../packages/VBarChart.vue'
 import VBarChartGrouped from '../../packages/VBarChartGrouped.vue'
@@ -43,7 +45,11 @@ import type { ComponentDataConfig } from '../../types/component'
 import './index.css' // 导入独立的 CSS 文件
 import '../workplace/index.css' // 导入动画样式
 
+const route = useRoute()
 const router = useRouter()
+
+// 记录来源页面，用于返回时跳转到正确的编辑器
+const fromEditor = computed(() => route.query.from as string || 'editor')
 // 注册所有组件到映射表
 const componentMap: Record<string, any> = {
   VBarChart, VBarChartGrouped, VBarChartStacked, VBarChartHorizontal, VBarChartCapsule, VBarChartLine,
@@ -56,6 +62,14 @@ const componentMap: Record<string, any> = {
 }
 
 const componentData = ref<any[]>([])
+// 图表数据（用于图表编辑器保存的图表）
+const chartData = ref<any>(null)
+const isChartPreview = computed(() => route.query.type === 'chart')
+
+// 图表引用
+const chartPreviewRef = ref<HTMLElement | null>(null)
+let chartPreviewInstance: echarts.ECharts | null = null
+
 // 假设我们的设计稿就是 1920 * 1080
 const canvasWidth = 1920
 const canvasHeight = 1080
@@ -77,9 +91,140 @@ const updateScale = () => {
   scale.value = Math.min(wScale, hScale)
 }
 
+// 获取图表配置（用于预览图表）
+const getChartOption = () => {
+  if (!chartData.value) return {}
+  
+  const { chartType, title, columnHeaders, rowHeaders, rowData } = chartData.value
+  
+  // 构建系列数据
+  const columnCount = columnHeaders.length
+  const series = []
+  const seriesNames = []
+  
+  // 从第二列开始是数据列
+  for (let col = 1; col < columnCount; col++) {
+    const seriesData: number[] = []
+    for (let row = 0; row < rowData.length; row++) {
+      const value = rowData[row][col - 1]
+      seriesData.push(Number(value) || 0)
+    }
+    
+    series.push({
+      name: columnHeaders[col],
+      type: chartType,
+      data: seriesData,
+      smooth: chartType === 'line',
+      symbol: chartType === 'line' ? 'circle' : undefined,
+      symbolSize: chartType === 'line' ? 6 : undefined
+    })
+    
+    seriesNames.push(columnHeaders[col])
+  }
+  
+  // X轴数据
+  const xAxisData = rowHeaders
+  
+  // 颜色配置
+  const colors = ['#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de', '#3ba272']
+  
+  return {
+    title: {
+      text: title,
+      left: 'center',
+      textStyle: {
+        fontSize: 24,
+        color: '#fff'
+      }
+    },
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        type: chartType === 'bar' ? 'shadow' : 'line'
+      }
+    },
+    legend: {
+      data: seriesNames,
+      bottom: 30,
+      textStyle: {
+        color: '#fff',
+        fontSize: 14
+      }
+    },
+    grid: {
+      left: '5%',
+      right: '5%',
+      bottom: '15%',
+      top: '80px',
+      containLabel: true
+    },
+    xAxis: {
+      type: 'category',
+      data: xAxisData,
+      axisLabel: {
+        color: '#ccc',
+        fontSize: 14
+      },
+      axisLine: {
+        lineStyle: {
+          color: '#555'
+        }
+      }
+    },
+    yAxis: {
+      type: 'value',
+      axisLabel: {
+        color: '#ccc',
+        fontSize: 14
+      },
+      axisLine: {
+        lineStyle: {
+          color: '#555'
+        }
+      },
+      splitLine: {
+        lineStyle: {
+          color: '#333'
+        }
+      }
+    },
+    series: series,
+    color: colors
+  }
+}
+
+// 返回编辑器
+const goBack = () => {
+  if (fromEditor.value === 'chart-editor') {
+    router.push('/chart-editor')
+  } else {
+    router.push('/editor')
+  }
+}
+const renderChartPreview = async () => {
+  if (!chartData.value || !chartPreviewRef.value) return
+  
+  await nextTick()
+  
+  if (chartPreviewRef.value) {
+    chartPreviewInstance = markRaw(echarts.init(chartPreviewRef.value))
+    chartPreviewInstance.setOption(getChartOption())
+  }
+}
+
 onMounted(() => {
-  const savedData = localStorage.getItem('my-go-view-data')
-  if (savedData) componentData.value = JSON.parse(savedData)
+  // 检查是否是图表预览
+  if (isChartPreview.value) {
+    const saved = localStorage.getItem('chart-preview-data')
+    if (saved) {
+      chartData.value = JSON.parse(saved)
+      renderChartPreview()
+    }
+  } else {
+    // 原有的组件预览逻辑
+    const savedData = localStorage.getItem('my-go-view-data')
+    if (savedData) componentData.value = JSON.parse(savedData)
+  }
 
   // 进页面时先算一次比例
   updateScale()
@@ -90,16 +235,33 @@ onMounted(() => {
 onUnmounted(() => {
   // 离开页面时销毁监听，保持好习惯
   window.removeEventListener('resize', updateScale)
+  // 销毁图表实例
+  if (chartPreviewInstance) {
+    chartPreviewInstance.dispose()
+    chartPreviewInstance = null
+  }
 })
 </script>
 
 <template>
   <div class="preview-viewport">
-    <button class="back-btn" @click="router.push('/')">🔙 返回编辑器</button>
+    <button class="back-btn" @click="goBack">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      <span>返回编辑器</span>
+    </button>
 
+    <!-- 图表预览模式 -->
+    <div v-if="isChartPreview" class="chart-preview-container">
+      <div ref="chartPreviewRef" class="chart-preview-canvas"></div>
+    </div>
+
+    <!-- 组件预览模式 -->
     <!-- 宽高固定是 1920x1080 -->
     <!-- 利用 scale 进行缩放，利用 translate(-50%, -50%) 把它永远钉在屏幕正中间 -->
     <div 
+      v-else
       class="canvas-screen"
       :style="{
         width: canvasWidth + 'px',

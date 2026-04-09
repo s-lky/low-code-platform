@@ -14,6 +14,11 @@ const router = createRouter({
         component:()=>import('../views/workplace/index.vue')
     },
     {
+        path:'/chart-editor',
+        name:'ChartEditor',
+        component:()=>import('../views/chart-editor/index.vue')
+    },
+    {
         path:'/preview',
         name:'Preview',
         component:() => import('../views/proview/index.vue')
