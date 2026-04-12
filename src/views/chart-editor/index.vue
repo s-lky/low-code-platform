@@ -38,6 +38,25 @@
 
     <!-- 主内容区 -->
     <div class="chart-editor-content">
+      <!-- AI 智能生成区域 -->
+      <div class="ai-generator-section" :class="{ 'dark-theme': isDarkMode }">
+        <div class="ai-input-wrapper">
+          <textarea 
+            v-model="aiPrompt" 
+            placeholder="描述你想要的图表，例如：生成一个展示2020-2024年各季度销售额的柱状图..."
+            class="ai-prompt-input"
+            @keydown.ctrl.enter="handleAIGenerate"
+          ></textarea>
+          <button class="btn ai-generate-btn" @click="handleAIGenerate" :disabled="aiStore.loading">
+            <span v-if="aiStore.loading" class="loading-spinner"></span>
+            {{ aiStore.loading ? 'AI 生成中...' : '✨ AI 生成图表' }}
+          </button>
+        </div>
+        <div v-if="aiStore.streamContent" class="ai-stream-preview">
+          <pre>{{ aiStore.streamContent }}</pre>
+        </div>
+      </div>
+
       <!-- 左侧图表展示区 -->
       <div class="chart-preview-area">
         <div class="chart-title-input">
@@ -223,9 +242,14 @@ import * as echarts from 'echarts'
 import { useResizeObserver } from '@vueuse/core'
 import { useRouter } from 'vue-router'
 import * as XLSX from 'xlsx'
+import { useAIChartStore } from '../../store/useAIChartStore'
 import './index.css' // 导入样式
 
 const router = useRouter()
+const aiStore = useAIChartStore()
+
+// AI 相关状态
+const aiPrompt = ref('')
 
 // 主题切换：false=白天（默认），true=黑夜
 const isDarkMode = ref(false)
@@ -706,5 +730,73 @@ const publishChart = () => {
   localStorage.setItem('my-go-view-templates', JSON.stringify(templates))
   
   alert('图表发布成功！已保存到“我的模板”')
+}
+
+// AI 智能生成图表
+const handleAIGenerate = async () => {
+  if (!aiPrompt.value.trim()) {
+    alert('请输入图表描述')
+    return
+  }
+
+  try {
+    const option = await aiStore.generateChart(aiPrompt.value)
+    
+    if (option) {
+      // 解析 AI 返回的配置并更新当前图表
+      applyAIChartOption(option)
+      alert('AI 图表生成成功！')
+    }
+  } catch (error) {
+    console.error('AI 生成失败:', error)
+    alert('AI 生成失败，请重试')
+  }
+}
+
+// 应用 AI 生成的图表配置
+const applyAIChartOption = (option: any) => {
+  // 提取标题
+  if (option.title && option.title.text) {
+    chartTitle.value = option.title.text
+  }
+
+  // 提取 X 轴数据
+  if (option.xAxis && option.xAxis.data) {
+    rowHeaders.value = option.xAxis.data.map((item: any) => String(item))
+  }
+
+  // 提取系列数据
+  if (option.series && Array.isArray(option.series)) {
+    const firstSeries = option.series[0]
+    if (firstSeries) {
+      // 判断图表类型
+      if (firstSeries.type === 'line') {
+        chartType.value = 'line'
+      } else {
+        chartType.value = 'bar'
+      }
+
+      // 提取列头和数据
+      const newColumnHeaders = ['', ...option.series.map((s: any) => s.name || '分类')]
+      const newRowData = rowHeaders.value.map((_, rowIndex) => {
+        return option.series.map((s: any) => String(s.data[rowIndex] || 0))
+      })
+
+      columnHeaders.value = newColumnHeaders
+      rowData.value = newRowData
+      columnCount.value = newColumnHeaders.length
+    }
+  }
+
+  // 提取轴名称
+  if (option.xAxis && option.xAxis.name) {
+    xAxisName.value = option.xAxis.name
+  }
+  if (option.yAxis && option.yAxis.name) {
+    yAxisName.value = option.yAxis.name
+  }
+
+  // 更新图表显示
+  updateChart()
 }
 </script>

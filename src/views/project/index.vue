@@ -67,13 +67,13 @@
                   <Transition name="fade">
                     <div class="dropdown-menu" v-if="activeMenuId === item.id" @click.stop>
                       <div class="dropdown-item" @click="handleAction('preview', item)">
-                        <span>🖥️</span> 预览
+                        <span></span> 预览
                       </div>
                       <div class="dropdown-item" @click="handleAction('toggleStatus', item)">
-                        <span>✈️</span> {{ item.status === 1 ? '取消发布' : '发布' }}
+                        <span></span> {{ item.status === 1 ? '取消发布' : '发布' }}
                       </div>
                       <div class="dropdown-item delete" @click="handleAction('delete', item)">
-                        <span>🗑️</span> 删除
+                        <span></span> 删除
                       </div>
                     </div>
                   </Transition>
@@ -131,19 +131,19 @@
             <div class="dialog-body">
               <div class="create-options">
                 <button class="create-option-btn" @click="createChartEditor">
-                  <span class="option-icon">📊</span>
+                  <span class="option-icon"></span>
                   <span class="option-label">生成图表</span>
                 </button>
                 <button class="create-option-btn" @click="createComponentEditor">
-                  <span class="option-icon">🧩</span>
+                  <span class="option-icon"></span>
                   <span class="option-label">组件编辑</span>
                 </button>
                 <button class="create-option-btn" @click="showTemplateList = true">
-                  <span class="option-icon">📁</span>
+                  <span class="option-icon"></span>
                   <span class="option-label">我的模板</span>
                 </button>
                 <button class="create-option-btn" @click="showTemplateMarket = true">
-                  <span class="option-icon">🏪</span>
+                  <span class="option-icon"></span>
                   <span class="option-label">模板市场</span>
                 </button>
               </div>
@@ -181,7 +181,7 @@
                 </div>
               </div>
               <div class="empty-state" v-else>
-                <div class="empty-icon">📭</div>
+                <div class="empty-icon"></div>
                 <p>暂无模板，请先保存一些模板吧！</p>
               </div>
             </div>

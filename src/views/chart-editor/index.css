@@ -126,6 +126,121 @@
   border-radius: 8px;
 }
 
+/* AI 智能生成区域样式 */
+.ai-generator-section {
+  padding: 20px;
+  background: #fff;
+  border-bottom: 1px solid #e4e7ed;
+  transition: all 0.3s;
+}
+
+.chart-editor-container.dark-theme .ai-generator-section {
+  background: #1d1e1f;
+  border-color: #333;
+}
+
+.ai-input-wrapper {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.ai-prompt-input {
+  flex: 1;
+  min-height: 60px;
+  max-height: 120px;
+  padding: 12px;
+  border: 1px solid #dcdfe6;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #303133;
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.5;
+  transition: border-color 0.2s;
+}
+
+.chart-editor-container.dark-theme .ai-prompt-input {
+  background: #333;
+  border-color: #555;
+  color: #ccc;
+}
+
+.ai-prompt-input:focus {
+  outline: none;
+  border-color: #409eff;
+}
+
+.chart-editor-container.dark-theme .ai-prompt-input:focus {
+  border-color: #00e5ff;
+}
+
+.ai-generate-btn {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ai-generate-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.ai-generate-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.ai-stream-preview {
+  margin-top: 12px;
+  padding: 12px;
+  background: #f5f7fa;
+  border-radius: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.chart-editor-container.dark-theme .ai-stream-preview {
+  background: #2a2b2c;
+}
+
+.ai-stream-preview pre {
+  margin: 0;
+  font-size: 12px;
+  color: #606266;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  line-height: 1.6;
+}
+
+.chart-editor-container.dark-theme .ai-stream-preview pre {
+  color: #999;
+}
+
 /* 顶部工具栏 */
 .chart-editor-header {
   display: flex;

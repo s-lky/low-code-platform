@@ -258,7 +258,7 @@ const fieldMappingTips = computed(() => {
         </div>
 
         <button class="btn btn-test" @click="testApiRequest">
-          🧪 测试请求
+          测试请求
         </button>
 
         <div class="form-item" style="margin-top: 15px;">
@@ -310,7 +310,7 @@ const fieldMappingTips = computed(() => {
         </div>
 
         <button class="btn btn-primary" @click="saveConfig">
-          💾 保存配置
+          保存配置
         </button>
       </div>
     </div>
