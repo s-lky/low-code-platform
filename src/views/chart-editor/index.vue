@@ -38,27 +38,27 @@
 
     <!-- 主内容区 -->
     <div class="chart-editor-content">
-      <!-- AI 智能生成区域 -->
-      <div class="ai-generator-section" :class="{ 'dark-theme': isDarkMode }">
-        <div class="ai-input-wrapper">
-          <textarea 
-            v-model="aiPrompt" 
-            placeholder="描述你想要的图表，例如：生成一个展示2020-2024年各季度销售额的柱状图..."
-            class="ai-prompt-input"
-            @keydown.ctrl.enter="handleAIGenerate"
-          ></textarea>
-          <button class="btn ai-generate-btn" @click="handleAIGenerate" :disabled="aiStore.loading">
-            <span v-if="aiStore.loading" class="loading-spinner"></span>
-            {{ aiStore.loading ? 'AI 生成中...' : '✨ AI 生成图表' }}
-          </button>
-        </div>
-        <div v-if="aiStore.streamContent" class="ai-stream-preview">
-          <pre>{{ aiStore.streamContent }}</pre>
-        </div>
-      </div>
-
       <!-- 左侧图表展示区 -->
       <div class="chart-preview-area">
+        <!-- AI 智能生成区域 -->
+        <div class="ai-generator-section" :class="{ 'dark-theme': isDarkMode }">
+          <div class="ai-input-wrapper">
+            <textarea 
+              v-model="aiPrompt" 
+              placeholder="描述你想要的图表，例如：生成一个展示2020-2024年各季度销售额的柱状图..."
+              class="ai-prompt-input"
+              @keydown.ctrl.enter="handleAIGenerate"
+            ></textarea>
+            <button class="btn ai-generate-btn" @click="handleAIGenerate" :disabled="aiStore.loading">
+              <span v-if="aiStore.loading" class="loading-spinner"></span>
+              {{ aiStore.loading ? 'AI 生成中...' : 'AI 生成图表' }}
+            </button>
+          </div>
+          <div v-if="aiStore.streamContent" class="ai-stream-preview">
+            <pre>{{ aiStore.streamContent }}</pre>
+          </div>
+        </div>
+
         <div class="chart-title-input">
           <input 
             type="text" 

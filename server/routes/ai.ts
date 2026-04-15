@@ -7,6 +7,7 @@ router.post('/generate-chart', async (req, res) => {
   const { messages } = req.body
 
   console.log('[AI Server] 收到请求，消息数量:', messages?.length)
+  console.log("当前读取的API KEY是:", process.env.DEEPSEEK_API_KEY);
 
   try {
     const response = await fetch('https://api.deepseek.com/chat/completions', {
