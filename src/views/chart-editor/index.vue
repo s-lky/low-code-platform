@@ -42,33 +42,66 @@
       <div class="chart-preview-area">
         <!-- AI 智能生成区域 -->
         <div class="ai-generator-section" :class="{ 'dark-theme': isDarkMode }">
-          <div class="ai-input-wrapper">
-            <textarea 
-              v-model="aiPrompt" 
-              placeholder="描述你想要的图表，例如：生成一个展示2020-2024年各季度销售额的柱状图..."
-              class="ai-prompt-input"
-              @keydown.ctrl.enter="handleAIGenerate"
-            ></textarea>
+          <div class="ai-top-row">
+            <!-- 左侧：用户输入区域 -->
+            <div class="ai-input-area">
+              <textarea 
+                v-model="aiPrompt" 
+                placeholder="描述你想要的图表，例如：生成一个展示2020-2024年各季度销售额的柱状图..."
+                class="ai-prompt-input"
+                @keydown.ctrl.enter="handleAIGenerate"
+              ></textarea>
+            </div>
+            <!-- 右侧：AI生成的JSON数据 -->
+            <div class="ai-json-area">
+              <div v-if="aiStore.streamContent" class="json-preview">
+                <pre>{{ aiStore.streamContent }}</pre>
+              </div>
+              <div v-else class="json-placeholder">
+                <span class="placeholder-text">AI 生成的 JSON 数据将在这里显示</span>
+              </div>
+            </div>
+            <!-- 生成按钮 -->
             <button class="btn ai-generate-btn" @click="handleAIGenerate" :disabled="aiStore.loading">
               <span v-if="aiStore.loading" class="loading-spinner"></span>
               {{ aiStore.loading ? 'AI 生成中...' : 'AI 生成图表' }}
             </button>
           </div>
-          <div v-if="aiStore.streamContent" class="ai-stream-preview">
-            <pre>{{ aiStore.streamContent }}</pre>
-          </div>
         </div>
 
-        <div class="chart-title-input">
-          <input 
-            type="text" 
-            v-model="chartTitle" 
-            placeholder="输入图表标题"
-            class="title-input"
-          />
-        </div>
-        <div class="chart-wrapper">
-          <div ref="chartRef" class="chart-container"></div>
+        <!-- 图表展示区域（可滚动查看所有生成的图表） -->
+        <div class="charts-display-area" :class="{ 'dark-theme': isDarkMode }">
+          <div v-if="!generatedCharts.length" class="charts-empty">
+            <span class="empty-text">使用 AI 生成图表或手动编辑数据</span>
+          </div>
+          <div v-else class="charts-list">
+            <div 
+              v-for="(chart, index) in generatedCharts" 
+              :key="index" 
+              class="chart-item"
+            >
+              <div class="chart-item-header">
+                <h4>{{ chart.title || `图表 ${index + 1}` }}</h4>
+                <button class="btn-small" @click="loadChart(index)">编辑此图表</button>
+              </div>
+              <div ref="chartRefs" :id="`chart-${index}`" class="chart-item-container"></div>
+            </div>
+          </div>
+          
+          <!-- 当前图表预览（保留原有功能） -->
+          <div class="current-chart-wrapper">
+            <div class="chart-title-input">
+              <input 
+                type="text" 
+                v-model="chartTitle" 
+                placeholder="输入图表标题"
+                class="title-input"
+              />
+            </div>
+            <div class="chart-wrapper">
+              <div ref="chartRef" class="chart-container"></div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -250,6 +283,11 @@ const aiStore = useAIChartStore()
 
 // AI 相关状态
 const aiPrompt = ref('')
+
+// 生成的图表历史列表
+const generatedCharts = ref<Array<any>>([])
+const chartInstanceList = ref<Array<echarts.ECharts | null>>([])
+const chartRefs = ref<Array<HTMLElement>>([])
 
 // 主题切换：false=白天（默认），true=黑夜
 const isDarkMode = ref(false)
@@ -743,13 +781,53 @@ const handleAIGenerate = async () => {
     const option = await aiStore.generateChart(aiPrompt.value)
     
     if (option) {
-      // 解析 AI 返回的配置并更新当前图表
+      // 将生成的图表配置保存到历史列表
+      generatedCharts.value.push({
+        option: JSON.parse(JSON.stringify(option)),
+        title: option.title?.text || '未命名图表'
+      })
+      
+      // 同时应用到当前编辑的图表
       applyAIChartOption(option)
+      
+      // 等待 DOM 更新后渲染所有图表
+      await nextTick()
+      renderAllGeneratedCharts()
+      
       alert('AI 图表生成成功！')
     }
   } catch (error) {
     console.error('AI 生成失败:', error)
     alert('AI 生成失败，请重试')
+  }
+}
+
+// 渲染所有已生成的图表
+const renderAllGeneratedCharts = () => {
+  // 销毁旧的实例
+  chartInstanceList.value.forEach(instance => {
+    if (instance) {
+      instance.dispose()
+    }
+  })
+  chartInstanceList.value = []
+  
+  // 渲染每个图表
+  generatedCharts.value.forEach((chart, index) => {
+    const chartElement = document.getElementById(`chart-${index}`)
+    if (chartElement && chart.option) {
+      const instance = markRaw(echarts.init(chartElement))
+      instance.setOption(chart.option)
+      chartInstanceList.value.push(instance)
+    }
+  })
+}
+
+// 加载指定图表到编辑器
+const loadChart = (index: number) => {
+  const chart = generatedCharts.value[index]
+  if (chart && chart.option) {
+    applyAIChartOption(chart.option)
   }
 }
 

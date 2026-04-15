@@ -128,13 +128,11 @@
 
 /* AI 智能生成区域样式 */
 .ai-generator-section {
-  padding: 20px;
+  padding: 16px;
   background: #fff;
   border-bottom: 1px solid #e4e7ed;
   transition: all 0.3s;
   flex-shrink: 0;
-  max-height: 200px;
-  overflow-y: scroll;
 }
 
 .chart-editor-container.dark-theme .ai-generator-section {
@@ -142,22 +140,91 @@
   border-color: #333;
 }
 
-.ai-input-wrapper {
+.ai-top-row {
   display: flex;
   gap: 12px;
-  align-items: flex-start;
+  align-items: stretch;
+  height: 120px;
+}
+
+.ai-input-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.ai-json-area {
+  flex: 1.5;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.json-preview {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 12px;
+  background: #f5f7fa;
+  border: 1px solid #dcdfe6;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.chart-editor-container.dark-theme .json-preview {
+  background: #2a2b2c;
+  border-color: #555;
+}
+
+.json-preview pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  color: #606266;
+  font-family: 'Consolas', 'Monaco', monospace;
+}
+
+.chart-editor-container.dark-theme .json-preview pre {
+  color: #999;
+}
+
+.json-placeholder {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  background: #f5f7fa;
+  border: 1px solid #dcdfe6;
+  border-radius: 6px;
+  border-style: dashed;
+}
+
+.chart-editor-container.dark-theme .json-placeholder {
+  background: #2a2b2c;
+  border-color: #555;
+}
+
+.placeholder-text {
+  color: #909399;
+  font-size: 13px;
+}
+
+.chart-editor-container.dark-theme .placeholder-text {
+  color: #666;
 }
 
 .ai-prompt-input {
   flex: 1;
-  min-height: 60px;
-  max-height: 120px;
+  min-height: 80px;
+  max-height: 100%;
   padding: 12px;
   border: 1px solid #dcdfe6;
   border-radius: 6px;
   font-size: 14px;
   color: #303133;
-  resize: vertical;
+  resize: none;
   font-family: inherit;
   line-height: 1.5;
   transition: border-color 0.2s;
@@ -407,6 +474,115 @@
   flex-direction: column;
   background: #fff;
   border-right: 1px solid #e4e7ed;
+  overflow: hidden;
+}
+
+.chart-wrapper {
+  flex: 1;
+  padding: 20px;
+  overflow: hidden;
+}
+
+/* 图表展示区域（新增） */
+.charts-display-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 20px;
+  background: #f5f7fa;
+  transition: background 0.3s;
+}
+
+.chart-editor-container.dark-theme .charts-display-area {
+  background: #0f1011;
+}
+
+.charts-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  background: #fff;
+  border-radius: 8px;
+  border: 2px dashed #dcdfe6;
+}
+
+.chart-editor-container.dark-theme .charts-empty {
+  background: #1d1e1f;
+  border-color: #333;
+}
+
+.empty-text {
+  color: #909399;
+  font-size: 14px;
+}
+
+.chart-editor-container.dark-theme .empty-text {
+  color: #666;
+}
+
+.charts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-bottom: 20px;
+}
+
+.chart-item {
+  background: #fff;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s;
+}
+
+.chart-editor-container.dark-theme .chart-item {
+  background: #1d1e1f;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.chart-item:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.chart-editor-container.dark-theme .chart-item:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.chart-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e4e7ed;
+}
+
+.chart-editor-container.dark-theme .chart-item-header {
+  border-color: #333;
+}
+
+.chart-item-header h4 {
+  margin: 0;
+  font-size: 16px;
+  color: #303133;
+  font-weight: 600;
+}
+
+.chart-editor-container.dark-theme .chart-item-header h4 {
+  color: #fff;
+}
+
+.chart-item-container {
+  width: 100%;
+  height: 350px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* 当前图表预览区域 */
+.current-chart-wrapper {
+  margin-top: 20px;
 }
 
 .chart-title-input {
